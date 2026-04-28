@@ -1,0 +1,51 @@
+# 🏺 Memoralis
+
+**Memoralis** és una aplicació personal dissenyada per arxivar, organitzar i enriquir els records digitals de les creacions dels més petits de la casa. 
+
+A diferència d'una galeria de fotos convencional, Memoralis se centra en l'**emoció del moment**: permet associar cada dibuix o manualitat amb un **àudio** on el mateix infant explica què ha creat, convertint una simple imatge en un record viu per al futur.
+
+## ✨ Característiques principals
+
+- **Arxiu Multimèdia:** Combina fotografies d'obres amb notes de veu.
+- **Timeline Organitzat:** Visualitza les creacions per data original de creació.
+- **Privacitat per Disseny:** Storage local i base de dades SQLite per a un control total de les dades.
+- **Disseny Minimalista:** Interfície neta centrada en el contingut visual.
+
+## 🛠️ Stack Tecnològic
+
+- **Framework:** [Next.js 14](https://nextjs.org/) (App Router & TypeScript)
+- **Base de dades:** [SQLite](https://www.sqlite.org/) via [Prisma 7](https://www.prisma.io/)
+- **Estils:** [Tailwind CSS](https://tailwindcss.com/)
+- **Storage:** Sistema de fitxers local per a una gestió senzilla i portable.
+
+## 🚀 Començar
+
+Primer, instal·la les dependències:
+
+```bash
+npm install
+```
+
+Configura el fitxer `.env` amb la ruta de la base de dades i el storage:
+
+```env
+DATABASE_URL="file:./dev.db"
+MEDIA_PATH="./media"
+```
+
+Executa les migracions de Prisma:
+
+```bash
+npx prisma migrate dev
+```
+
+Finalment, arrenca el servidor de desenvolupament:
+
+```bash
+npm run dev
+```
+
+Obre [http://localhost:3000](http://localhost:3000) al teu navegador per veure el resultat.
+
+## 📝 Llicència
+Projecte d'ús personal. Tots els drets reservats.

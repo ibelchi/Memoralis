@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Artwork {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  author      String
+  artDate     DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  images  Image[]
+  audios  Audio[]
+  tags    Tag[]
+}
+
+model Image {
+  id        String  @id @default(cuid())
+  artworkId String
+  artwork   Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  filePath  String
+  type      String  @default("drawing")
+  order     Int     @default(0)
+}
+
+model Audio {
+  id          String  @id @default(cuid())
+  artworkId   String
+  artwork     Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  filePath    String
+  durationSec Int?
+  description String?
+}
+
+model Tag {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  color    String    @default("#6366f1")
+  artworks Artwork[]
+}
