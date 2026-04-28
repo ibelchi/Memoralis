@@ -114,17 +114,21 @@ MEDIA_PATH="./media"
 
 ---
 
-## Decisions d'arquitectura
+**Prisma 7 + Next.js 14 — configuració crítica (hard-won):**
 
-**IDs:** `cuid()` — URL-friendly, sense col·lisions, portable.
-
-**Noms de fitxers:** Es genera un nom únic amb `crypto.randomUUID()` + extensió original. El nom original no es guarda (no és rellevant).
-
-**Storage:** Els fitxers multimèdia viuen a `/media` fora del repositori. La variable `MEDIA_PATH` apunta al directori. Els fitxers es serveixen via `/api/media/[...path]`. Això facilita migrar a S3 en el futur canviant només `lib/storage.ts`.
-
-**Autenticació:** NextAuth instal·lat i estructurat però no actiu. S'activarà a la Fase 4 quan l'app s'exposi a internet.
-
-**Prisma 7:** La URL de connexió va a `prisma.config.ts` (a l'arrel), NO a `schema.prisma`. Si s'afegeix `url` al schema, Prisma dona error en la migració.
+- La URL de connexió va a `prisma.config.ts`, NO al `schema.prisma`.
+- `DATABASE_URL` i `MEDIA_PATH` s'han d'exposar explícitament a l'objecte `env` 
+  de `next.config.mjs` per estar disponibles en runtime.
+- `better-sqlite3` requereix estar a `serverExternalPackages` al `next.config.mjs`.
+  A Next.js 14 la clau correcta és `experimental.serverComponentsExternalPackages`,
+  no `serverExternalPackages` (aquest és de Next.js 15+).
+- L'adaptador s'inicialitza com a factoria amb URL, NO amb instància de DB:
+  `new PrismaBetterSqlite3({ url: absolutePath })` ✅
+  `new PrismaBetterSqlite3(new Database(path))` ❌
+- Usar rutes absolutes amb `path.join(process.cwd(), ...)` per al path del .db.
+- Usar `require` per carregar els binaris natius de better-sqlite3.
+- Si canvies alguna cosa al schema.prisma, executa `npx prisma generate` 
+  abans de reiniciar el servidor.
 
 ---
 
@@ -147,7 +151,7 @@ MEDIA_PATH="./media"
 **Fase 1 — Arquitectura** ✅ Completada
 Stack, model de dades, estructura de carpetes, configuració de Prisma i SQLite.
 
-**Fase 2 — MVP** (en curs)
+**Fase 2 — MVP** ✅ Completada
 Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització per data.
 
 **Fase 3 — Millores funcionals**
