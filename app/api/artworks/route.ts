@@ -22,8 +22,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { title, description, author, artDate } = body;
+    const { title, description, author, artDate, tags } = await request.json();
 
     if (!title || !author || !artDate) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -35,12 +34,19 @@ export async function POST(request: Request) {
         description,
         author,
         artDate: new Date(artDate),
+        tags: {
+          connectOrCreate: (tags ?? []).map((name: string) => ({
+            where: { name: name.trim().toLowerCase() },
+            create: { name: name.trim().toLowerCase() },
+          })),
+        },
       },
+      include: { images: true, audios: true, tags: true },
     });
 
     return NextResponse.json(artwork, { status: 201 });
   } catch (error) {
-    console.error('Error creating artwork:', error);
-    return NextResponse.json({ error: 'Failed to create artwork' }, { status: 500 });
+    console.error("Error creating artwork:", error);
+    return NextResponse.json({ error: "Error creating artwork" }, { status: 500 });
   }
 }

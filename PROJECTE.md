@@ -137,12 +137,16 @@ MEDIA_PATH="./media"
 | Mètode | Ruta | Descripció |
 |---|---|---|
 | GET | `/api/artworks` | Llista totes les obres (amb imatges, àudios, tags) |
-| POST | `/api/artworks` | Crea una obra nova |
+| POST | `/api/artworks` | Crea una obra nova (amb tags) |
 | GET | `/api/artworks/[id]` | Detall d'una obra |
+| PATCH | `/api/artworks/[id]` | Actualitza una obra (tags, etc.) |
 | DELETE | `/api/artworks/[id]` | Elimina una obra (cascade) |
 | POST | `/api/upload/image` | Puja una imatge i la vincula a una obra |
 | POST | `/api/upload/audio` | Puja un àudio i el vincula a una obra |
 | GET | `/api/media/[...path]` | Serveix fitxers de la carpeta `/media` |
+| GET | `/api/tags` | Llista tots els tags amb recompte d'obres |
+| POST | `/api/tags` | Crea un tag nou (upsert) |
+| DELETE | `/api/tags/[id]` | Elimina un tag |
 
 ---
 

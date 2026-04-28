@@ -45,3 +45,32 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to delete artwork' }, { status: 500 });
   }
 }
+
+// PATCH /api/artworks/[id] — actualitza tags (i en el futur, altres camps)
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { tags } = await request.json();
+
+    const artwork = await prisma.artwork.update({
+      where: { id: params.id },
+      data: {
+        tags: {
+          set: [], // desconnecta tots els actuals
+          connectOrCreate: (tags ?? []).map((name: string) => ({
+            where: { name: name.trim().toLowerCase() },
+            create: { name: name.trim().toLowerCase() },
+          })),
+        },
+      },
+      include: { tags: true },
+    });
+
+    return NextResponse.json(artwork);
+  } catch (error) {
+    console.error("Error updating artwork:", error);
+    return NextResponse.json({ error: "Error updating artwork" }, { status: 500 });
+  }
+}
