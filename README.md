@@ -1,4 +1,4 @@
-# 🏺 Memoralis
+# Memoralis
 
 **Memoralis** és una aplicació personal dissenyada per arxivar, organitzar i enriquir els records digitals de les creacions dels més petits de la casa. 
 
