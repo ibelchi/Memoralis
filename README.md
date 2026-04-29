@@ -53,8 +53,12 @@ Obre [http://localhost:3000](http://localhost:3000) al teu navegador per veure e
 ## 🗺️ Roadmap
 
 - [ ] **Exportació simplificada:** Implementar un sistema per exportar tot el contingut (imatges, àudios i metadades) de la manera més senzilla possible per garantir la portabilitat dels records.
-- [ ] Millores en el sistema d'etiquetes i cerca.
-- [ ] Dockerització per a un desplegament més senzill.
+- [ ] **Interfície de cerca millorada:** Amagar els filtres i cercador per defecte a la pàgina principal, fent-los aparèixer només quan l'usuari ho necessiti.
+- [ ] **Exploració aleatòria:** Botó per mostrar una o vàries obres d'art a l'atzar ("Inspira'm").
+- [ ] **Personalització de la quadrícula:** Permetre configurar la quantitat de columnes i el tamany de les previsualitzacions a la galeria principal.
+- [ ] Refactorització d'estructura de codi i extracció de components (Deute tècnic).
+- [ ] Dockerització per a un desplegament més sencill.
+
 
 ## 📝 Llicència
 

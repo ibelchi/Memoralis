@@ -1,9 +1,49 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const q = searchParams.get('q');
+    const author = searchParams.get('author');
+    const tag = searchParams.get('tag');
+    const dateFrom = searchParams.get('dateFrom');
+    const dateTo = searchParams.get('dateTo');
+
+    const where: any = { AND: [] };
+
+    if (q) {
+      where.AND.push({
+        OR: [
+          { title: { contains: q } },
+          { description: { contains: q } },
+          { tags: { some: { name: { contains: q } } } },
+        ],
+      });
+    }
+
+    if (author) {
+      where.AND.push({ author: { equals: author } });
+    }
+
+    if (tag) {
+      where.AND.push({ tags: { some: { name: { equals: tag } } } });
+    }
+
+    if (dateFrom || dateTo) {
+      where.AND.push({
+        artDate: {
+          gte: dateFrom ? new Date(dateFrom) : undefined,
+          lte: dateTo ? new Date(dateTo) : undefined,
+        },
+      });
+    }
+
+    // Si no hi ha filtres, netegem el where per evitar un AND buit (encara que Prisma ho gestiona)
+    const finalWhere = where.AND.length > 0 ? where : {};
+
     const artworks = await prisma.artwork.findMany({
+      where: finalWhere,
       orderBy: {
         artDate: 'desc',
       },
@@ -19,6 +59,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to fetch artworks' }, { status: 500 });
   }
 }
+
 
 export async function POST(request: Request) {
   try {

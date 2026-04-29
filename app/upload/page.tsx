@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import TagInput from '@/components/TagInput';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function UploadPage() {
   const [author, setAuthor] = useState('');
   const [artDate, setArtDate] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedTags, setSelectedTags] = useState<{ id: string; name: string; color: string }[]>([]);
 
   // Estats de fitxers (Pas 2)
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -34,7 +36,13 @@ export default function UploadPage() {
       const res = await fetch('/api/artworks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, author, artDate, description }),
+        body: JSON.stringify({ 
+          title, 
+          author, 
+          artDate, 
+          description,
+          tags: selectedTags.map(t => t.name) // Enviem només els noms
+        }),
       });
       
       const data = await res.json();
@@ -48,6 +56,7 @@ export default function UploadPage() {
       setIsLoading(false);
     }
   };
+
 
   const handleUploadImage = async () => {
     if (!imageFile || !artworkId) return;
@@ -179,6 +188,13 @@ export default function UploadPage() {
                   className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all resize-none"
                   placeholder="Què estava fent o pensant quan ho va crear?"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Etiquetes
+                </label>
+                <TagInput selectedTags={selectedTags} onChange={setSelectedTags} />
               </div>
 
               <button

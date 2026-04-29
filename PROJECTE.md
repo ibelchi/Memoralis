@@ -167,6 +167,18 @@ Docker Compose, self-hosting, activació de NextAuth, gestió eficient del stora
 
 **Fase 5 — Open Source** ✅ En curs
 Documentació pública, guia d'instal·lació, llicència MIT.
+*Deute tècnic:* Netejar l'estructura de codi i extreure components (ex: UploadForm).
+
+---
+
+## Millores i idees futures
+
+Aquestes idees s'han de tenir en compte per a futures planificacions:
+- **Cerca col·lapsable:** Amagar la barra de filtres per defecte per prioritzar la visibilitat de les obres.
+- **Mode Aleatori:** Botó per "descobrir" records del passat de forma atzarosa.
+- **Configuració de Galeria:** Slider o selectors per canviar el número de columnes (densitat) de la quadrícula.
+- **Presentació (Slideshow):** Mode de reproducció automàtica que passi les fotos i reprodueixi els àudios de forma seqüencial.
+
 
 
 ---

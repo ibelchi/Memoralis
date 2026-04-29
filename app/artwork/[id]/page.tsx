@@ -33,23 +33,35 @@ export default async function ArtworkPage({
   return (
     <main className="min-h-screen bg-stone-50 text-stone-800 font-sans pb-20">
       <div className="max-w-4xl mx-auto px-6 py-12">
-        {/* Botó Tornar */}
-        <Link
-          href="/"
-          className="inline-flex items-center text-stone-500 hover:text-amber-700 transition-colors mb-8 font-medium"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
+        {/* Navegació superior */}
+        <div className="flex justify-between items-center mb-8">
+          <Link
+            href="/"
+            className="inline-flex items-center text-stone-500 hover:text-amber-700 transition-colors font-medium"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Tornar a la galeria
-        </Link>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Tornar a la galeria
+          </Link>
+
+          <Link
+            href={`/artwork/${artwork.id}/edit`}
+            className="inline-flex items-center px-4 py-2 bg-white border border-stone-200 hover:border-amber-500 hover:text-amber-700 text-stone-600 rounded-full font-medium transition-colors shadow-sm text-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Editar obra
+          </Link>
+        </div>
 
         <article className="bg-white rounded-[2.5rem] shadow-sm border border-stone-100 overflow-hidden">
           {/* Imatge Principal */}
@@ -105,23 +117,17 @@ export default async function ArtworkPage({
 
             {/* Tags (si en té) */}
             {artwork.tags.length > 0 && (
-              <section className="mb-10">
-                <h2 className="text-sm uppercase tracking-widest text-stone-400 font-semibold mb-3">Etiquetes</h2>
-                <div className="flex flex-wrap gap-2">
-                  {artwork.tags.map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="px-3 py-1 rounded-full text-sm font-medium"
-                      style={{
-                        backgroundColor: `${tag.color}20`, // Afegim opacitat al color de fons
-                        color: tag.color,
-                      }}
-                    >
-                      {tag.name}
-                    </span>
-                  ))}
-                </div>
-              </section>
+              <div className="flex flex-wrap gap-2 mt-4 mb-8">
+                {artwork.tags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="px-3 py-1 rounded-full text-sm text-white"
+                    style={{ backgroundColor: tag.color }}
+                  >
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
             )}
 
             {/* Àudios (La veu dels nens) */}

@@ -46,26 +46,38 @@ export async function DELETE(
   }
 }
 
-// PATCH /api/artworks/[id] — actualitza tags (i en el futur, altres camps)
+// PATCH /api/artworks/[id] — actualitza dades de l'obra
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { tags } = await request.json();
+    const { title, description, author, artDate, tags } = await request.json();
+
+    const data: any = {};
+    if (title !== undefined) data.title = title;
+    if (description !== undefined) data.description = description;
+    if (author !== undefined) data.author = author;
+    if (artDate !== undefined) data.artDate = artDate ? new Date(artDate) : undefined;
+
+    if (tags !== undefined) {
+      data.tags = {
+        set: [], // desconnecta tots els actuals
+        connectOrCreate: (tags ?? []).map((name: string) => ({
+          where: { name: name.trim().toLowerCase() },
+          create: { name: name.trim().toLowerCase() },
+        })),
+      };
+    }
 
     const artwork = await prisma.artwork.update({
       where: { id: params.id },
-      data: {
-        tags: {
-          set: [], // desconnecta tots els actuals
-          connectOrCreate: (tags ?? []).map((name: string) => ({
-            where: { name: name.trim().toLowerCase() },
-            create: { name: name.trim().toLowerCase() },
-          })),
-        },
+      data,
+      include: { 
+        images: true, 
+        audios: true, 
+        tags: true 
       },
-      include: { tags: true },
     });
 
     return NextResponse.json(artwork);
@@ -74,3 +86,4 @@ export async function PATCH(
     return NextResponse.json({ error: "Error updating artwork" }, { status: 500 });
   }
 }
+
