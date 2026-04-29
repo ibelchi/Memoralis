@@ -30,7 +30,9 @@ memoralis/
 ├── app/
 │   ├── page.tsx                      # Galeria principal
 │   ├── layout.tsx                    # Layout global
+│   ├── admin/tags/page.tsx           # Gestió d'etiquetes
 │   ├── artwork/[id]/page.tsx         # Detall d'una obra
+│   ├── artwork/[id]/edit/page.tsx    # Edició d'obra
 │   ├── upload/page.tsx               # Formulari d'upload
 │   └── api/
 │       ├── artworks/route.ts         # GET llista, POST crea
@@ -42,6 +44,8 @@ memoralis/
 ├── components/
 │   ├── ArtworkCard.tsx
 │   ├── AudioPlayer.tsx
+│   ├── GalleryFilters.tsx
+│   ├── TagInput.tsx
 │   └── UploadForm.tsx
 ├── lib/
 │   ├── prisma.ts                     # Singleton client Prisma
@@ -159,7 +163,8 @@ Stack, model de dades, estructura de carpetes, configuració de Prisma i SQLite.
 Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització per data.
 
 **Fase 3 — Millores funcionals**
-Sistema d'etiquetes, filtres, cerca, edició d'obres, UX millorada.
+✅ Sistema d'etiquetes, filtres, cerca, edició d'obres
+⏳ UX millorada (pendent)
 *Nou:* Implementar exportació simplificada de dades (portabilitat).
 
 **Fase 4 — Infraestructura**
