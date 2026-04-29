@@ -2,6 +2,9 @@
 
 **Memoralis** és una aplicació personal dissenyada per arxivar, organitzar i enriquir els records digitals de les creacions dels més petits de la casa. 
 
+> [!IMPORTANT]
+> **Estat del projecte:** Actualment el software es troba en fase **MVP (Producte Mínim Viable)**. És funcional per a ús personal, però pot contenir errors o faltar-li característiques avançades.
+
 A diferència d'una galeria de fotos convencional, Memoralis se centra en l'**emoció del moment**: permet associar cada dibuix o manualitat amb un **àudio** on el mateix infant explica què ha creat, convertint una simple imatge en un record viu per al futur.
 
 ## ✨ Característiques principals
@@ -26,7 +29,7 @@ Primer, instal·la les dependències:
 npm install
 ```
 
-Configura el fitxer `.env` amb la ruta de la base de dades i el storage:
+Configura el fitxer `.env` amb la ruta de la base de dades i el storage (pots usar `.env.example` com a base):
 
 ```env
 DATABASE_URL="file:./dev.db"
@@ -47,5 +50,13 @@ npm run dev
 
 Obre [http://localhost:3000](http://localhost:3000) al teu navegador per veure el resultat.
 
+## 🗺️ Roadmap
+
+- [ ] **Exportació simplificada:** Implementar un sistema per exportar tot el contingut (imatges, àudios i metadades) de la manera més senzilla possible per garantir la portabilitat dels records.
+- [ ] Millores en el sistema d'etiquetes i cerca.
+- [ ] Dockerització per a un desplegament més senzill.
+
 ## 📝 Llicència
-Projecte d'ús personal. Tots els drets reservats.
+
+Aquest projecte està sota la llicència **MIT**. Consulta el fitxer [LICENSE](LICENSE) per a més detalls.
+

@@ -160,12 +160,14 @@ Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització pe
 
 **Fase 3 — Millores funcionals**
 Sistema d'etiquetes, filtres, cerca, edició d'obres, UX millorada.
+*Nou:* Implementar exportació simplificada de dades (portabilitat).
 
 **Fase 4 — Infraestructura**
 Docker Compose, self-hosting, activació de NextAuth, gestió eficient del storage.
 
-**Fase 5 — Open Source**
-Documentació pública, guia d'instal·lació, neteja de codi.
+**Fase 5 — Open Source** ✅ En curs
+Documentació pública, guia d'instal·lació, llicència MIT.
+
 
 ---
 
