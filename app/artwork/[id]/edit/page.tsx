@@ -25,6 +25,14 @@ export default function EditArtworkPage({
   const [description, setDescription] = useState("");
   const [selectedTags, setSelectedTags] = useState<{ id: string; name: string; color: string }[]>([]);
 
+  // Estats de multimèdia
+  const [images, setImages] = useState<any[]>([]);
+  const [audios, setAudios] = useState<any[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+
   // 1. Carregar dades inicials
   useEffect(() => {
     const fetchArtwork = async () => {
@@ -47,6 +55,8 @@ export default function EditArtworkPage({
         }
         setDescription(data.description || "");
         setSelectedTags(data.tags || []);
+        setImages(data.images || []);
+        setAudios(data.audios || []);
         
       } catch (err: any) {
         setError(err.message);
@@ -58,7 +68,79 @@ export default function EditArtworkPage({
     fetchArtwork();
   }, [id]);
 
-  // 3. Desar els canvis
+  // 2. Gestionar multimèdia
+  const handleDeleteImage = async (imageId: string) => {
+    if (!confirm("Vols eliminar aquesta imatge?")) return;
+    try {
+      const res = await fetch(`/api/images/${imageId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error("Error en eliminar la imatge");
+      setImages(images.filter((img) => img.id !== imageId));
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteAudio = async (audioId: string) => {
+    if (!confirm("Vols eliminar aquest àudio?")) return;
+    try {
+      const res = await fetch(`/api/audios/${audioId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error("Error en eliminar l'àudio");
+      setAudios(audios.filter((audio) => audio.id !== audioId));
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleUploadImage = async () => {
+    if (!imageFile) return;
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      formData.append('artworkId', id);
+
+      const res = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al pujar la imatge');
+      
+      setImages([...images, data]);
+      setImageFile(null);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleUploadAudio = async () => {
+    if (!audioFile) return;
+    setIsUploadingAudio(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', audioFile);
+      formData.append('artworkId', id);
+      if (title) formData.append('description', title);
+
+      const res = await fetch('/api/upload/audio', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al pujar l\'àudio');
+      
+      setAudios([...audios, data]);
+      setAudioFile(null);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsUploadingAudio(false);
+    }
+  };
+
+  // 3. Desar els canvis principals
   const handleUpdateArtwork = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -185,6 +267,87 @@ export default function EditArtworkPage({
                 Etiquetes
               </label>
               <TagInput selectedTags={selectedTags} onChange={setSelectedTags} />
+            </div>
+
+            {/* Secció Imatges */}
+            <div className="pt-6 border-t border-stone-100">
+              <h2 className="text-xl font-serif text-stone-900 mb-4">Imatges</h2>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+                {images.map((img) => (
+                  <div key={img.id} className="relative group rounded-xl overflow-hidden border border-stone-200">
+                    <img src={`/api/media/${img.filePath}`} alt="Obra" className="w-full h-32 object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(img.id)}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                      title="Eliminar imatge"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                />
+                <button
+                  type="button"
+                  onClick={handleUploadImage}
+                  disabled={!imageFile || isUploadingImage}
+                  className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
+                >
+                  {isUploadingImage ? 'Pujant...' : 'Afegir imatge'}
+                </button>
+              </div>
+            </div>
+
+            {/* Secció Àudios */}
+            <div className="pt-6 border-t border-stone-100">
+              <h2 className="text-xl font-serif text-stone-900 mb-4">Àudios</h2>
+              
+              <div className="space-y-3 mb-4">
+                {audios.map((audio) => (
+                  <div key={audio.id} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" /></svg>
+                      </div>
+                      <span className="text-sm font-medium text-stone-700">{audio.description || 'Àudio'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteAudio(audio.id)}
+                      className="text-red-500 hover:text-red-700 p-2 transition-colors"
+                      title="Eliminar àudio"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                  className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-[#D4752A] hover:file:bg-orange-100"
+                />
+                <button
+                  type="button"
+                  onClick={handleUploadAudio}
+                  disabled={!audioFile || isUploadingAudio}
+                  className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
+                >
+                  {isUploadingAudio ? 'Pujant...' : 'Afegir àudio'}
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-stone-100">

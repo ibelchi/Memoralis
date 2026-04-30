@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Tag {
   id: string;
@@ -34,6 +37,7 @@ export default function ArtworkCard({
   isSelected = false,
   onToggleSelect,
 }: ArtworkCardProps) {
+  const router = useRouter();
   const [favorite, setFavorite] = useState(isFavorite);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -130,17 +134,17 @@ export default function ArtworkCard({
         )}
 
         {/* Imatge de portada */}
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100">
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-white border-b border-stone-100">
           {imageUrl ? (
             <img
               src={imageUrl}
               alt={title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-stone-300">
-              <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-stone-100 text-stone-400">
+              <svg className="w-12 h-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -148,6 +152,17 @@ export default function ArtworkCard({
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
+              <span className="text-sm font-medium mb-3">Sense imatge</span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/artwork/${id}/edit`);
+                }}
+                className="px-4 py-1.5 bg-white border border-stone-200 rounded-full text-xs font-semibold text-stone-600 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition-colors shadow-sm z-20 relative"
+              >
+                Afegir imatge
+              </button>
             </div>
           )}
           
@@ -155,19 +170,23 @@ export default function ArtworkCard({
           {isSelectionMode && !isSelected && (
             <div className="absolute inset-0 bg-stone-900/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           )}
+
+          {/* Badge d'àudio */}
+          {hasAudio && (
+            <div className="absolute bottom-3 right-3 bg-stone-900/40 backdrop-blur-sm text-white p-1.5 rounded-full shadow-sm z-10" title="Té àudio associat">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                <path d="M7 4a3 3 0 0 1 6 0v6a3 3 0 1 1-6 0V4Z" />
+                <path d="M10 18a7 7 0 0 0 7-7h-1.5a5.5 5.5 0 0 1-11 0H3a7 7 0 0 0 7 7Z" />
+              </svg>
+            </div>
+          )}
         </div>
 
         {/* Informació de la targeta */}
         <div className="p-6 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-2">
-            <h2 className="text-xl font-medium text-stone-800 line-clamp-1 group-hover:text-[#D4752A] transition-colors relative">
+            <h2 className="text-xl font-medium text-stone-800 line-clamp-1 group-hover:text-[#D4752A] transition-colors">
               {title}
-              {hasAudio && (
-                <span 
-                  className="absolute -top-1 -right-3 w-2 h-2 rounded-full bg-[#D4752A]" 
-                  title="Té àudio associat"
-                />
-              )}
             </h2>
           </div>
 

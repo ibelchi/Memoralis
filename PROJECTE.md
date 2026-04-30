@@ -36,14 +36,17 @@ memoralis/
 │   ├── upload/page.tsx               # Formulari d'upload
 │   └── api/
 │       ├── artworks/route.ts         # GET llista, POST crea
-│       ├── artworks/[id]/route.ts    # GET, DELETE per id
+│       ├── artworks/[id]/route.ts    # GET, DELETE, PATCH per id
+│       ├── images/[id]/route.ts      # DELETE imatge individual
+│       ├── audios/[id]/route.ts      # DELETE àudio individual
 │       ├── upload/image/route.ts     # POST puja imatge
 │       ├── upload/audio/route.ts     # POST puja àudio
-│       ├── media/[...path]/route.ts  # Serveix fitxers de /media
+│       ├── media/[...path]/route.ts  # Serveix fitxers (amb suport HTTP Range)
 │       └── auth/[...nextauth]/route.ts
 ├── components/
 │   ├── ArtworkCard.tsx
 │   ├── AudioPlayer.tsx
+│   ├── BatchUploadGrid.tsx
 │   ├── GalleryFilters.tsx
 │   ├── TagInput.tsx
 │   └── UploadForm.tsx
@@ -146,9 +149,11 @@ MEDIA_PATH="./media"
 | GET | `/api/artworks/[id]` | Detall d'una obra |
 | PATCH | `/api/artworks/[id]` | Actualitza una obra (tags, isFavorite, etc.) |
 | DELETE | `/api/artworks/[id]` | Elimina una obra (cascade) |
+| DELETE | `/api/images/[id]` | Elimina una imatge de la DB i del disc |
+| DELETE | `/api/audios/[id]` | Elimina un àudio de la DB i del disc |
 | POST | `/api/upload/image` | Puja una imatge i la vincula a una obra |
 | POST | `/api/upload/audio` | Puja un àudio i el vincula a una obra |
-| GET | `/api/media/[...path]` | Serveix fitxers de la carpeta `/media` |
+| GET | `/api/media/[...path]` | Serveix fitxers (suporta HTTP Range per a seeking) |
 | GET | `/api/tags` | Llista tots els tags amb recompte d'obres |
 | POST | `/api/tags` | Crea un tag nou (upsert) |
 | DELETE | `/api/tags/[id]` | Elimina un tag |
@@ -164,8 +169,9 @@ Stack, model de dades, estructura de carpetes, configuració de Prisma i SQLite.
 Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització per data.
 
 **Fase 3 — Millores funcionals**
-✅ Sistema d'etiquetes, filtres, cerca, edició d'obres
 ⏳ UX millorada (Galeria i Detall completades)
+✅ Gestió de multimèdia (esborrar fitxers individuals, suport multi-imatge)
+✅ Càrrega massiva d'obres (Batch Upload) con selector d'autora dinàmic
 *Nou:* Implementar exportació simplificada de dades (portabilitat).
 
 **Fase 4 — Infraestructura**
@@ -193,8 +199,8 @@ Decisions de disseny preses i validades. Referència visual: disseny generat a G
 
 ### Grid de cards
 - Masonry o auto-fill grid, mínim 200px per columna
-- Les cards mostren: imatge (ratio 4:3), títol, autora (avatar amb inicial + color únic per filla), data en format **"Abril 2026"** (nom del mes complet + any, sense dia, sense conjunció "de/del"). Implementació: `toLocaleDateString('ca-ES', { month: 'long', year: 'numeric' })` eliminant qualsevol conjunció resultant.
-- Indicador d'àudio: punt taronja petit a la cantonada superior dreta del títol (subtil, no icona gran)
+- Les cards mostren: imatge (ratio 4:3), títol, autora (avatar amb inicial + color únic per filla), data en format **"Abril 2026"**.
+- Indicador d'àudio: icona de micròfon blanca en un badge semi-transparent sobre la imatge (cantonada inferior dreta). Apareix si `hasAudio` és cert.
 - Indicador de favorit: estrella a la card, clicable per marcar/desmarcar directament des de la galeria
 - Tags com a pills de colors a la part inferior de la card
 
@@ -241,7 +247,9 @@ Decisions de disseny preses i validades. Referència visual: disseny generat a G
 **Interacció:**
 - Títol de l'obra a 22px. L'estrella de favorit se situa just a la dreta del títol, alineada horitzontalment.
 - La data segueix el format "Mes Any" (ex: Abril 2026).
-- Àudios: Es mostra directament el reproductor customitzat (sense controls natius). S'ha eliminat qualsevol etiqueta o títol individual per a l'àudio (KISS), mantenint només la capçalera de secció "La seva explicació" si es considera necessari o deixant només el reproductor si l'obra és la que li dóna context.
+- Àudios: Es mostra directament el reproductor customitzat amb suport per a desplaçament temporal (seeking).
+- Imatges: Suport per a múltiples imatges en seqüència vertical. Les imatges es mostren sempre senceres (`object-contain`) i tenen una alçada màxima restringida al viewport (`max-h-[85vh]`) per evitar scroll excessiu i garantir que es vegin senceres d'un sol cop d'ull.
+- Gestió de fitxers: Possibilitat d'eliminar imatges i àudios individuals directament des de la pàgina d'edició.
 
 **Flux de pujada (`upload/page.tsx`):**
 - S'ha eliminat el camp de text per a la descripció de l'àudio. 
