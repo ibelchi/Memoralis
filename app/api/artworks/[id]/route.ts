@@ -52,13 +52,14 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { title, description, author, artDate, tags } = await request.json();
+    const { title, description, author, artDate, tags, isFavorite } = await request.json();
 
     const data: any = {};
     if (title !== undefined) data.title = title;
     if (description !== undefined) data.description = description;
     if (author !== undefined) data.author = author;
     if (artDate !== undefined) data.artDate = artDate ? new Date(artDate) : undefined;
+    if (isFavorite !== undefined) data.isFavorite = isFavorite;
 
     if (tags !== undefined) {
       data.tags = {

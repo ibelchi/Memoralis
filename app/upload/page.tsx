@@ -94,6 +94,9 @@ export default function UploadPage() {
       const formData = new FormData();
       formData.append('file', audioFile);
       formData.append('artworkId', artworkId);
+      if (title) {
+        formData.append('description', title);
+      }
 
       const res = await fetch('/api/upload/audio', {
         method: 'POST',
@@ -252,20 +255,22 @@ export default function UploadPage() {
                     Àudio pujat correctament
                   </p>
                 ) : (
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                      type="file"
-                      accept="audio/*"
-                      onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                      className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
-                    />
-                    <button
-                      onClick={handleUploadAudio}
-                      disabled={!audioFile || isLoading}
-                      className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
-                    >
-                      Pujar àudio
-                    </button>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                        className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-[#D4752A] hover:file:bg-orange-100"
+                      />
+                      <button
+                        onClick={handleUploadAudio}
+                        disabled={!audioFile || isLoading}
+                        className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
+                      >
+                        Pujar àudio
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

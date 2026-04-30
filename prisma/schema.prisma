@@ -12,6 +12,7 @@ model Artwork {
   description String?
   author      String
   artDate     DateTime
+  isFavorite  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

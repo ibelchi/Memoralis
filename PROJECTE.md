@@ -74,6 +74,7 @@ model Artwork {
   description String?
   author      String        # Nom de la filla autora
   artDate     DateTime      # Quan es va crear l'obra (no quan s'arxiva)
+  isFavorite  Boolean  @default(false)   # Marcat com a favorit
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   images      Image[]
@@ -143,7 +144,7 @@ MEDIA_PATH="./media"
 | GET | `/api/artworks` | Llista totes les obres (amb imatges, àudios, tags) |
 | POST | `/api/artworks` | Crea una obra nova (amb tags) |
 | GET | `/api/artworks/[id]` | Detall d'una obra |
-| PATCH | `/api/artworks/[id]` | Actualitza una obra (tags, etc.) |
+| PATCH | `/api/artworks/[id]` | Actualitza una obra (tags, isFavorite, etc.) |
 | DELETE | `/api/artworks/[id]` | Elimina una obra (cascade) |
 | POST | `/api/upload/image` | Puja una imatge i la vincula a una obra |
 | POST | `/api/upload/audio` | Puja un àudio i el vincula a una obra |
@@ -164,7 +165,7 @@ Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització pe
 
 **Fase 3 — Millores funcionals**
 ✅ Sistema d'etiquetes, filtres, cerca, edició d'obres
-⏳ UX millorada (pendent)
+⏳ UX millorada (Galeria i Detall completades)
 *Nou:* Implementar exportació simplificada de dades (portabilitat).
 
 **Fase 4 — Infraestructura**
@@ -176,15 +177,93 @@ Documentació pública, guia d'instal·lació, llicència MIT.
 
 ---
 
+## Especificació UX — Galeria principal
+
+Decisions de disseny preses i validades. Referència visual: disseny generat a Google Stitch (pantalla "Memoralis Gallery - Filters Desktop").
+
+### Capçalera
+- Nom de l'app i subtítol en una sola línia horitzontal, compacta
+- Botó "+ Afegir obra" en píndola, color accent taronja (#D4752A), alineat a la dreta
+
+### Filtres
+- Les autores (Gala / Júlia / Totes) són pills clicables sempre visibles a la barra principal
+- La cerca per text s'integra a la mateixa fila de filtres
+- Els filtres secundaris (etiquetes, rang de dates, àudio) estan amagats per defecte darrere un botó "Més filtres" amb icona d'embut
+- El panell de filtres secundaris s'obre/tanca en clicar el botó
+
+### Grid de cards
+- Masonry o auto-fill grid, mínim 200px per columna
+- Les cards mostren: imatge (ratio 4:3), títol, autora (avatar amb inicial + color únic per filla), data en format **"Abril 2026"** (nom del mes complet + any, sense dia, sense conjunció "de/del"). Implementació: `toLocaleDateString('ca-ES', { month: 'long', year: 'numeric' })` eliminant qualsevol conjunció resultant.
+- Indicador d'àudio: punt taronja petit a la cantonada superior dreta del títol (subtil, no icona gran)
+- Indicador de favorit: estrella a la card, clicable per marcar/desmarcar directament des de la galeria
+- Tags com a pills de colors a la part inferior de la card
+
+### Borrat d'obres
+
+**Des de la pàgina de detall** (`artwork/[id]/page.tsx`):
+- Botó "Esborrar" al costat del botó d'editar
+- Estil neutre fins a hover (tint vermell suau en hover)
+- Modal de confirmació abans d'executar
+- En confirmar: `DELETE /api/artworks/[id]`, redirecció a la galeria
+
+**Des de la galeria — mode selecció múltiple** (`app/page.tsx`):
+- Botó "Seleccionar" a la barra de filtres (al costat de "Més filtres")
+- En mode selecció: les cards mostren checkbox en hover; el botó canvia a "Cancel·lar"
+- Barra flotant inferior quan ≥1 card seleccionada: recompte + botó "Esborrar selecció" (vermell)
+- Modal de confirmació amb el nombre d'obres afectades
+- En confirmar: crida DELETE per cada id seleccionat, sortida del mode selecció, refresc de galeria
+
+### Dos modes de galeria (toggle a la capçalera o barra de filtres)
+
+**Mode Descoberta** (per defecte en entrar):
+- Selecció aleatòria d'obres, regenerada a cada visita
+- Barreja favorits i no favorits (els favorits tenen lleuger avantatge de selecció)
+- Sense ordenació cronològica visible
+
+**Mode Galeria**:
+- Totes les obres, ordenació cronològica descendent (més recent primer)
+- Tots els filtres actius
+
+### Decisions descartades
+- **Mode fosc:** no s'implementa al MVP. Base en variables CSS preparada per si s'afegeix en el futur.
+- **Carpetes / Col·leccions:** descartades. Les etiquetes + filtre per autora + filtre per data cobreixen completament la necessitat d'organització.
+
+---
+
+### Pàgina de detall (`artwork/[id]/page.tsx`)
+
+**Disseny de la pàgina:**
+- Centratge vertical de tot el contingut en el viewport (`min-h-screen`, `flex items-center`).
+- Contingut dins d'una targeta central (`max-w-[900px]`) amb estètica coherent amb la galeria (vores `rounded-3xl`, ombrejat suau).
+- Estructura interna de dues columnes: Imatge (esquerra) i Informació (dreta).
+- Botó "Tornar" situat a la part superior esquerra de la pàgina, fora de la targeta, estil text minimalista.
+
+**Interacció:**
+- Títol de l'obra a 22px. L'estrella de favorit se situa just a la dreta del títol, alineada horitzontalment.
+- La data segueix el format "Mes Any" (ex: Abril 2026).
+- Àudios: Es mostra directament el reproductor customitzat (sense controls natius). S'ha eliminat qualsevol etiqueta o títol individual per a l'àudio (KISS), mantenint només la capçalera de secció "La seva explicació" si es considera necessari o deixant només el reproductor si l'obra és la que li dóna context.
+
+**Flux de pujada (`upload/page.tsx`):**
+- S'ha eliminat el camp de text per a la descripció de l'àudio. 
+- El sistema assigna automàticament el títol de l'obra com a descripció de l'àudio internament per mantenir la traçabilitat a la base de dades sense carregar la UI.
+
+---
+
+## Pantalles pendents de revisió UX
+
+Les següents pantalles no han estat revisades encara i s'han de tractar en properes sessions:
+- `admin/tags/page.tsx` — Gestió d'etiquetes
+
+---
+
 ## Millores i idees futures
 
-Aquestes idees s'han de tenir en compte per a futures planificacions:
-- **Cerca col·lapsable:** Amagar la barra de filtres per defecte per prioritzar la visibilitat de les obres.
-- **Mode Aleatori:** Botó per "descobrir" records del passat de forma atzarosa.
+- **Favorits:** ✅ Especificat (vegeu model de dades i especificació UX)
+- **Mode Descoberta / Aleatori:** ✅ Especificat (vegeu especificació UX)
+- **Cerca col·lapsable:** ✅ Especificat i inclòs al disseny de filtres
 - **Configuració de Galeria:** Slider o selectors per canviar el número de columnes (densitat) de la quadrícula.
 - **Presentació (Slideshow):** Mode de reproducció automàtica que passi les fotos i reprodueixi els àudios de forma seqüencial.
-
-
+- **Visualitzador d'àudio:** Animació d'espectre de freqüències o ones sota el reproductor d'àudio a la pàgina de detall. Web Audio API + canvas. Color accent taronja al 40% d'opacitat. Activable/desactivable amb botó discret, preferència persistida a localStorage. Implementar com a última capa estètica, un cop la resta de la pantalla de detall estigui consolidada.
 
 ---
 
@@ -192,5 +271,4 @@ Aquestes idees s'han de tenir en compte per a futures planificacions:
 
 - **Google AI Pro (Gemini):** Generació de codi, implementació de funcionalitats.
 - **Claude:** Planificació, decisions d'arquitectura, resolució de problemes complexos. Quan es consulta Claude, es recomana adjuntar aquest fitxer com a context en lloc de repetir l'historial de conversa.
-- **Google Stitch:** Pendent d'integrar (previst Fase 3 per a UX/UI).
-
+- **Google Stitch:** Disseny UX/UI. Connectat via MCP a Claude Code (Antigravity) per exportar dissenys directament al codi.

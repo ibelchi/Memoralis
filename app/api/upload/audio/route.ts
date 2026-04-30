@@ -12,6 +12,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing file or artworkId' }, { status: 400 });
     }
 
+    const description = formData.get('description') as string;
+
     // Validation: audio/mpeg, audio/mp4, audio/wav, audio/m4a
     const validTypes = ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/x-m4a', 'audio/m4a'];
     if (!validTypes.includes(file.type)) {
@@ -26,6 +28,7 @@ export async function POST(request: Request) {
       data: {
         filePath,
         artworkId,
+        description: description || null,
       },
     });
 
