@@ -218,15 +218,42 @@ export default function HomePage() {
             <p className="text-stone-500 font-medium">Carregant la galeria...</p>
           </div>
         ) : displayedArtworks.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-stone-100">
-            <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+          <div className="relative overflow-hidden rounded-3xl shadow-sm border border-stone-100 min-h-[420px] flex items-center justify-center">
+            {/* Imatge de fons */}
+            <img
+              src="/images/empty-state.png"
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Overlay blanc per suavitzar */}
+            <div className="absolute inset-0 bg-white/60" />
+            {/* Contingut centrat */}
+            <div className="relative z-10 text-center px-8 py-16">
+              <h3 className="text-2xl font-serif font-light text-stone-700 mb-3">
+                {Object.values(filters).some(Boolean)
+                  ? "Cap obra coincideix amb la cerca"
+                  : "Encara no hi ha cap obra"}
+              </h3>
+              <p className="text-stone-500 mb-8">
+                {Object.values(filters).some(Boolean)
+                  ? "Prova a canviar o netejar els filtres."
+                  : "Afegeix el primer dibuix o fotografia."}
+              </p>
+              {!Object.values(filters).some(Boolean) && (
+                <Link
+                  href="/upload"
+                  className="inline-flex items-center px-6 py-3 bg-[#D4752A] hover:bg-orange-700 text-white rounded-full font-medium transition-colors shadow-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Afegir obra
+                </Link>
+              )}
             </div>
-            <h3 className="text-xl font-medium text-stone-700">Cap record coincideix amb la cerca</h3>
-            <p className="text-stone-500 mt-2">Prova a canviar o netejar els filtres.</p>
           </div>
+
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-8">
             {displayedArtworks.map((artwork) => (

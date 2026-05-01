@@ -10,9 +10,10 @@ A diferència d'una galeria de fotos convencional, Memoralis se centra en l'**em
 ## ✨ Característiques principals
 
 - **Arxiu Multimèdia:** Combina fotografies d'obres amb notes de veu.
+- **Suport PDF:** Puja quaderns o llibres sencers en PDF i l'app els convertirà en una seqüència d'imatges automàticament.
 - **Timeline Organitzat:** Visualitza les creacions per data original de creació.
 - **Privacitat per Disseny:** Storage local i base de dades SQLite per a un control total de les dades.
-- **Disseny Minimalista:** Interfície neta centrada en el contingut visual.
+- **Disseny Minimalista:** Interfície neta centrada en el contingut visual, amb estats buits il·lustrats.
 
 ## 🛠️ Stack Tecnològic
 
@@ -54,8 +55,9 @@ Obre [http://localhost:3000](http://localhost:3000) al teu navegador per veure e
 
 - [x] **Gestió de multimèdia avançada:** Suport per a múltiples imatges, eliminació individual de fitxers i millores en la reproducció d'àudio (seeking).
 - [x] **Interfície de cerca i galeria:** Implementació de filtres avançats, indicadors d'àudio visuals i optimització de la visualització d'imatges sense retalls.
+- [x] **Suport PDF:** Processament automàtic de fitxers PDF per a quaderns i llibres d'art.
+- [x] **Exploració aleatòria:** Mode "Descoberta" per redescobrir records a l'atzar.
 - [ ] **Exportació simplificada:** Implementar un sistema per exportar tot el contingut (imatges, àudios i metadades) de la manera més senzilla possible per garantir la portabilitat dels records.
-- [ ] **Exploració aleatòria:** Botó per mostrar una o vàries obres d'art a l'atzar ("Inspira'm").
 - [ ] **Personalització de la quadrícula:** Permetre configurar la quantitat de columnes i el tamany de l'espaiat a la galeria principal.
 - [ ] Dockerització per a un desplegament més senzill.
 

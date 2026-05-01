@@ -56,7 +56,7 @@ export default function BatchUploadGrid() {
       id: Math.random().toString(36).substring(7),
       file,
       preview: URL.createObjectURL(file),
-      title: file.name.split('.')[0] || '', // Pre-omple el títol amb el nom del fitxer
+      title: '', // Títol opcional
       author: globalAuthor,
       artDate: globalDate,
       status: 'idle'
@@ -235,7 +235,7 @@ export default function BatchUploadGrid() {
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-stone-500 mb-1">Títol</label>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">Títol <span className="text-stone-400 font-normal">(opcional)</span></label>
                   <input 
                     type="text" 
                     value={item.title}

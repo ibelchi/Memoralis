@@ -13,13 +13,15 @@ Filosofia: KISS. Ús personal primer, open source en el futur.
 | Capa | Tecnologia |
 |---|---|
 | Framework | Next.js 14 (App Router, TypeScript) |
-| Estils | Tailwind CSS |
+| Estils | Vanilla CSS + Tailwind CSS |
 | Base de dades | SQLite via Prisma 7 |
 | Storage | Sistema de fitxers local (`/media`) |
+| Processament PDF | `pdfjs-dist` (3.11) + `canvas` |
 | Autenticació | NextAuth (configurat, no actiu al MVP) |
 | Desplegament | Docker Compose (Fase 4) |
 
 **Versió de Node i Next:** Next.js 14.2.35
+**Configuració crítica:** `canvas` i `pdfjs-dist` a `experimental.serverComponentsExternalPackages`.
 
 ---
 
@@ -41,6 +43,7 @@ memoralis/
 │       ├── audios/[id]/route.ts      # DELETE àudio individual
 │       ├── upload/image/route.ts     # POST puja imatge
 │       ├── upload/audio/route.ts     # POST puja àudio
+│       ├── upload/pdf/route.ts       # POST puja PDF i el converteix a imatges
 │       ├── media/[...path]/route.ts  # Serveix fitxers (amb suport HTTP Range)
 │       └── auth/[...nextauth]/route.ts
 ├── components/
@@ -53,15 +56,19 @@ memoralis/
 ├── lib/
 │   ├── prisma.ts                     # Singleton client Prisma
 │   ├── storage.ts                    # Gestió fitxers locals
+│   ├── pdf.ts                        # Utilitat per a convertir PDF a imatges
 │   └── auth.ts                       # Configuració NextAuth
 ├── prisma/
 │   ├── schema.prisma
 │   └── migrations/
+├── public/
+│   └── images/                       # Actius estàtics (favicon, empty-state, etc.)
 ├── dev.db                            # Base de dades SQLite
 ├── prisma.config.ts                  # Configuració Prisma 7
 ├── media/                            # Fitxers multimèdia (fora de git)
 │   ├── images/
-│   └── audios/
+│   ├── audios/
+│   └── pdfs/                         # PDFs originals conservats
 ├── .env                              # Variables d'entorn
 └── .gitignore
 ```
@@ -73,10 +80,11 @@ memoralis/
 ```prisma
 model Artwork {
   id          String   @id @default(cuid())
-  title       String
+  title       String?       # Opcional (si no hi ha títol, es mostra net)
   description String?
   author      String        # Nom de la filla autora
   artDate     DateTime      # Quan es va crear l'obra (no quan s'arxiva)
+  sourcePdf   String?       # Path al PDF original si l'obra en prové
   isFavorite  Boolean  @default(false)   # Marcat com a favorit
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -127,16 +135,13 @@ MEDIA_PATH="./media"
 - La URL de connexió va a `prisma.config.ts`, NO al `schema.prisma`.
 - `DATABASE_URL` i `MEDIA_PATH` s'han d'exposar explícitament a l'objecte `env` 
   de `next.config.mjs` per estar disponibles en runtime.
-- `better-sqlite3` requereix estar a `serverExternalPackages` al `next.config.mjs`.
-  A Next.js 14 la clau correcta és `experimental.serverComponentsExternalPackages`,
-  no `serverExternalPackages` (aquest és de Next.js 15+).
-- L'adaptador s'inicialitza com a factoria amb URL, NO amb instància de DB:
-  `new PrismaBetterSqlite3({ url: absolutePath })` ✅
-  `new PrismaBetterSqlite3(new Database(path))` ❌
+- `better-sqlite3`, `canvas` i `pdfjs-dist` requereixen estar a `serverExternalPackages`.
+  A Next.js 14 la clau correcta és `experimental.serverComponentsExternalPackages`.
+- Per a `pdfjs-dist`, s'usa la versió `3.11.174` (legacy build) per evitar dependències de DOM a Node.js.
+- L'adaptador s'inicialitza com a factoria amb URL, NO amb instància de DB.
 - Usar rutes absolutes amb `path.join(process.cwd(), ...)` per al path del .db.
 - Usar `require` per carregar els binaris natius de better-sqlite3.
-- Si canvies alguna cosa al schema.prisma, executa `npx prisma generate` 
-  abans de reiniciar el servidor.
+- Si canvies alguna cosa al schema.prisma, executa `npx prisma generate`.
 
 ---
 
@@ -153,6 +158,7 @@ MEDIA_PATH="./media"
 | DELETE | `/api/audios/[id]` | Elimina un àudio de la DB i del disc |
 | POST | `/api/upload/image` | Puja una imatge i la vincula a una obra |
 | POST | `/api/upload/audio` | Puja un àudio i el vincula a una obra |
+| POST | `/api/upload/pdf` | Puja un PDF, el guarda i converteix pàgines a imatges |
 | GET | `/api/media/[...path]` | Serveix fitxers (suporta HTTP Range per a seeking) |
 | GET | `/api/tags` | Llista tots els tags amb recompte d'obres |
 | POST | `/api/tags` | Crea un tag nou (upsert) |
@@ -171,7 +177,9 @@ Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització pe
 **Fase 3 — Millores funcionals**
 ⏳ UX millorada (Galeria i Detall completades)
 ✅ Gestió de multimèdia (esborrar fitxers individuals, suport multi-imatge)
-✅ Càrrega massiva d'obres (Batch Upload) con selector d'autora dinàmic
+✅ Càrrega massiva d'obres (Batch Upload) amb selector d'autora dinàmic
+✅ Suport per a fitxers PDF (conversió automàtica a imatges)
+✅ UX emocional: estats buits amb il·lustracions i overlays suavitzats
 *Nou:* Implementar exportació simplificada de dades (portabilitat).
 
 **Fase 4 — Infraestructura**
@@ -229,6 +237,11 @@ Decisions de disseny preses i validades. Referència visual: disseny generat a G
 **Mode Galeria**:
 - Totes les obres, ordenació cronològica descendent (més recent primer)
 - Tots els filtres actius
+
+### Estats buits i placeholders
+- **Galeria buida:** Imatge `empty-state.png` a tota pantalla amb overlay `bg-white/60`. Missatge centralitzat i botó d'acció.
+- **Card sense imatge:** Imatge `empty-state.png` com a fons subtil amb overlay `bg-white/70`. Sense text, comunicació visual pura.
+- **Detall sense imatge:** Imatge `empty-state.png` amb overlay `bg-white/60` i botó "Afegir imatge" centrat.
 
 ### Decisions descartades
 - **Mode fosc:** no s'implementa al MVP. Base en variables CSS preparada per si s'afegeix en el futur.

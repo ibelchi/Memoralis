@@ -227,24 +227,29 @@ export default function ArtworkPage({
                 <div key={img.id} className="w-full bg-white rounded-2xl shadow-sm overflow-hidden border border-stone-200/50 flex justify-center items-center p-2 md:p-4">
                   <img
                     src={`/api/media/${img.filePath}`}
-                    alt={`${artwork.title} - Imatge`}
+                    alt={artwork.title ? `${artwork.title} - Imatge` : 'Imatge de l\'obra'}
                     className="max-w-full max-h-[80vh] md:max-h-[85vh] w-auto h-auto block mx-auto object-contain"
                   />
                 </div>
               ))}
             </div>
           ) : (
-            <div className="min-h-[40vh] h-full flex flex-col items-center justify-center bg-stone-100 text-stone-400 p-8">
-              <svg className="w-16 h-16 mb-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <p className="text-base font-medium mb-4">Sense imatges</p>
-              <Link
-                href={`/artwork/${artwork.id}/edit`}
-                className="px-5 py-2 bg-white border border-stone-200 rounded-full text-sm font-semibold text-stone-600 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition-colors shadow-sm"
-              >
-                Afegir imatge
-              </Link>
+            <div className="relative min-h-[40vh] h-full overflow-hidden">
+              <img
+                src="/images/empty-state.png"
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-white/60" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <Link
+                  href={`/artwork/${artwork.id}/edit`}
+                  className="px-5 py-2 bg-white/90 border border-stone-200 rounded-full text-sm font-semibold text-stone-600 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition-colors shadow-sm relative z-10"
+                >
+                  Afegir imatge
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -256,9 +261,11 @@ export default function ArtworkPage({
           <div className="mb-8">
             <div className="flex justify-between items-start gap-4 mb-5">
               <div className="flex items-center gap-3">
-                <h1 className="text-[22px] font-medium text-stone-900 leading-tight">
-                  {artwork.title}
-                </h1>
+                {artwork.title && (
+                  <h1 className="text-[22px] font-medium text-stone-900 leading-tight">
+                    {artwork.title}
+                  </h1>
+                )}
                 <button 
                   onClick={toggleFavorite}
                   className="transition-transform hover:scale-110 flex-shrink-0"
@@ -346,7 +353,7 @@ export default function ArtworkPage({
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl relative z-10 animate-in zoom-in-95 fade-in duration-200">
             <h3 className="text-xl font-medium text-stone-900 mb-3">Esborrar obra?</h3>
             <p className="text-stone-500 text-sm mb-8 leading-relaxed">
-              L'obra "<span className="font-semibold text-stone-800">{artwork.title}</span>" s'eliminarà permanentment. Aquesta acció no es pot desfer.
+              L'obra{artwork.title ? <> "<span className="font-semibold text-stone-800">{artwork.title}</span>"</> : ''} s'eliminarà permanentment. Aquesta acció no es pot desfer.
             </p>
             <div className="flex flex-col gap-2">
               <button

@@ -65,13 +65,13 @@ export async function POST(request: Request) {
   try {
     const { title, description, author, artDate, tags } = await request.json();
 
-    if (!title || !author || !artDate) {
+    if (!author || !artDate) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const artwork = await prisma.artwork.create({
       data: {
-        title,
+        title: title || null,
         description,
         author,
         artDate: new Date(artDate),

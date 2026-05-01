@@ -8,13 +8,14 @@ datasource db {
 
 model Artwork {
   id          String   @id @default(cuid())
-  title       String
+  title       String?
   description String?
   author      String
   artDate     DateTime
   isFavorite  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  sourcePdf   String?
 
   images  Image[]
   audios  Audio[]

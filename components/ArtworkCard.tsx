@@ -12,7 +12,7 @@ interface Tag {
 
 interface ArtworkCardProps {
   id: string;
-  title: string;
+  title: string | null;
   author: string;
   artDate: Date | string;
   imageUrl?: string;
@@ -138,31 +138,19 @@ export default function ArtworkCard({
           {imageUrl ? (
             <img
               src={imageUrl}
-              alt={title}
+              alt={title ?? 'Obra sense títol'}
               className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-stone-100 text-stone-400">
-              <svg className="w-12 h-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <span className="text-sm font-medium mb-3">Sense imatge</span>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  router.push(`/artwork/${id}/edit`);
-                }}
-                className="px-4 py-1.5 bg-white border border-stone-200 rounded-full text-xs font-semibold text-stone-600 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition-colors shadow-sm z-20 relative"
-              >
-                Afegir imatge
-              </button>
+            <div className="relative w-full h-full overflow-hidden">
+              <img
+                src="/images/empty-state.png"
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-white/70" />
             </div>
           )}
           
@@ -185,9 +173,11 @@ export default function ArtworkCard({
         {/* Informació de la targeta */}
         <div className="p-6 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-2">
-            <h2 className="text-xl font-medium text-stone-800 line-clamp-1 group-hover:text-[#D4752A] transition-colors">
-              {title}
-            </h2>
+            {title && (
+              <h2 className="text-xl font-medium text-stone-800 line-clamp-1 group-hover:text-[#D4752A] transition-colors">
+                {title}
+              </h2>
+            )}
           </div>
 
           <div className="mt-auto pt-4 flex items-center justify-between text-sm text-stone-500 font-medium border-t border-stone-50">

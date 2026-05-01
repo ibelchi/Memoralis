@@ -25,7 +25,10 @@ export default function UploadPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [uploadedPdfPages, setUploadedPdfPages] = useState<number | null>(null);
   const [uploadedAudio, setUploadedAudio] = useState(false);
+
+  const isPdf = imageFile?.type === 'application/pdf';
 
   const handleCreateArtwork = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,16 +71,23 @@ export default function UploadPage() {
       formData.append('file', imageFile);
       formData.append('artworkId', artworkId);
 
-      const res = await fetch('/api/upload/image', {
+      const isPdfFile = imageFile.type === 'application/pdf';
+      const endpoint = isPdfFile ? '/api/upload/pdf' : '/api/upload/image';
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         body: formData,
       });
-      
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al pujar la imatge');
-      
-      setUploadedImageUrl(`/api/media/${data.filePath}`);
-      setImageFile(null); // Netegem l'input
+      if (!res.ok) throw new Error(data.error || 'Error al pujar el fitxer');
+
+      if (isPdfFile) {
+        setUploadedPdfPages(data.pages as number);
+      } else {
+        setUploadedImageUrl(`/api/media/${data.filePath}`);
+      }
+      setImageFile(null);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -162,11 +172,10 @@ export default function UploadPage() {
                 <input
                   type="text"
                   id="title"
-                  required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
-                  placeholder="Ex: La casa del bosc"
+                  placeholder="Ex: La casa del bosc (opcional)"
                 />
               </div>
 
@@ -229,10 +238,10 @@ export default function UploadPage() {
 
           {step === 2 && (
             <div className="space-y-8">
-              {/* Secció Imatge */}
+              {/* Secció Imatge / PDF */}
               <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
-                <h2 className="text-lg font-medium text-stone-800 mb-4">1. Puja una imatge (foto o escàner)</h2>
-                
+                <h2 className="text-lg font-medium text-stone-800 mb-4">1. Puja una imatge o PDF</h2>
+
                 {uploadedImageUrl ? (
                   <div className="space-y-3">
                     <p className="text-sm text-green-600 font-medium flex items-center">
@@ -241,21 +250,39 @@ export default function UploadPage() {
                     </p>
                     <img src={uploadedImageUrl} alt="Previsualització" className="w-full max-h-64 object-contain rounded-xl border border-stone-200 bg-white" />
                   </div>
+                ) : uploadedPdfPages !== null ? (
+                  <p className="text-sm text-green-600 font-medium flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                    PDF processat correctament — {uploadedPdfPages} {uploadedPdfPages === 1 ? 'pàgina' : 'pàgines'} afegides
+                  </p>
                 ) : (
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                      className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
-                    />
-                    <button
-                      onClick={handleUploadImage}
-                      disabled={!imageFile || isLoading}
-                      className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
-                    >
-                      Pujar imatge
-                    </button>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="relative flex-1">
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                          className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                        />
+                        {isPdf && (
+                          <span className="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2a1 1 0 00-1 1v1H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2h-4V3a1 1 0 00-1-1zm-1 5h2v2h-2V7zm0 4h2v6h-2v-6z" />
+                            </svg>
+                            PDF — es convertirà a imatges per pàgina
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={handleUploadImage}
+                        disabled={!imageFile || isLoading}
+                        className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
+                      >
+                        {isLoading ? 'Processant…' : isPdf ? 'Pujar PDF' : 'Pujar imatge'}
+                      </button>
+                    </div>
+                    <p className="text-xs text-stone-400">Formats acceptats: JPG, PNG, WEBP, PDF</p>
                   </div>
                 )}
               </div>

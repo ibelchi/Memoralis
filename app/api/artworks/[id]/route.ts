@@ -55,7 +55,7 @@ export async function PATCH(
     const { title, description, author, artDate, tags, isFavorite } = await request.json();
 
     const data: any = {};
-    if (title !== undefined) data.title = title;
+    if (title !== undefined) data.title = title || null;
     if (description !== undefined) data.description = description;
     if (author !== undefined) data.author = author;
     if (artDate !== undefined) data.artDate = artDate ? new Date(artDate) : undefined;
