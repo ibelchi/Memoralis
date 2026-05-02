@@ -183,8 +183,26 @@ Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització pe
 ✅ Gestió massiva: Mode selecció múltiple i esborrat seqüencial
 *Nou:* Implementar exportació simplificada de dades (portabilitat).
 
-**Fase 4 — Infraestructura**
-Docker Compose, self-hosting, activació de NextAuth, gestió eficient del storage.
+**Fase 4 — Infraestructura (en curs)**
+
+### 4a — Dockerització
+Objectiu: empaquetar l'app amb Docker Compose per poder-la executar de forma consistent en qualsevol màquina (ordinador de casa, NAS, servidor).
+Components: Dockerfile per a Next.js 14, docker-compose.yml amb volums persistents per a `dev.db` i `/media`.
+
+### 4b — Accés mòbil (PWA)
+Objectiu: accedir a Memoralis des del telèfon com si fos una app nativa, sense passar per cap App Store.
+Estratègia: Progressive Web App (PWA) amb manifest.json i Service Worker bàsic.
+Prerequisit: app dockeritzada i accessible per IP a la xarxa local (Wi-Fi de casa).
+Experiència objectiu: obrir Safari → "Afegir a pantalla d'inici" → icona pròpia → formulari d'upload adaptat a mòbil amb accés directe a càmera i micròfon.
+
+### 4c — Backup i portabilitat
+Estratègia: l'app es basa en dos components a preservar:
+- `dev.db` (fitxer SQLite): tota la informació estructurada
+- `/media` (carpeta): tots els fitxers multimèdia
+
+Backup automàtic: afegir la carpeta del projecte al software de backup existent (Time Machine, Arq, etc.). Com que dev.db és un fitxer que canvia, es detecta automàticament.
+
+Backup manual: botó "Exportar còpia" a l'app (fase futura) que genera un .zip amb dev.db + /media. Per restaurar: instal·lar Memoralis, substituir dev.db i /media pel contingut del .zip.
 
 **Fase 5 — Open Source** ✅ En curs
 Documentació pública, guia d'instal·lació, llicència MIT.
@@ -295,3 +313,10 @@ Les següents pantalles no han estat revisades encara i s'han de tractar en prop
 - **Google AI Pro (Gemini):** Generació de codi, implementació de funcionalitats.
 - **Claude:** Planificació, decisions d'arquitectura, resolució de problemes complexos. Quan es consulta Claude, es recomana adjuntar aquest fitxer com a context en lloc de repetir l'historial de conversa.
 - **Google Stitch:** Disseny UX/UI. Connectat via MCP a Claude Code (Antigravity) per exportar dissenys directament al codi.
+
+---
+
+## Signatura / Crèdits
+
+Afegit enllaç discret "belchi" just sota el títol "Memoralis" a la capçalera (layout.tsx o el component de capçalera corresponent).
+Text: "belchi" · Mida: text-xs · Color: neutre/gris · Enllaç: https://ibelchi.github.io · Target: _blank

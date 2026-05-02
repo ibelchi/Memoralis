@@ -166,6 +166,14 @@ export default function HomePage() {
             <h1 className="text-4xl font-serif font-light text-stone-900 tracking-tight">
               Memoralis
             </h1>
+            <a 
+              href="https://ibelchi.github.io" 
+              target="_blank" 
+              rel="noopener" 
+              className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
+            >
+              belchi
+            </a>
           </div>
           
           <div className="flex items-center gap-4">
