@@ -198,11 +198,11 @@ export default function ArtworkCard({
                 <time dateTime={dateObj.toISOString()}>{displayDate}</time>
               </div>
 
-              <div className="flex flex-wrap gap-1 min-h-[28px]">
+              <div className="flex flex-wrap gap-1 min-h-[24px]">
                 {visibleTags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="px-2 py-0.5 rounded-full text-xs inline-flex items-center justify-center uppercase tracking-wider font-semibold group-hover:opacity-100 transition-opacity"
+                    className="px-1.5 py-0.5 rounded-full text-[10px] inline-flex items-center justify-center uppercase tracking-wider font-semibold group-hover:opacity-100 transition-opacity"
                     style={{ 
                       backgroundColor: tag.color,
                       color: getContrastColor(tag.color)
@@ -212,7 +212,7 @@ export default function ArtworkCard({
                   </span>
                 ))}
                 {remainingTagsCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-xs inline-flex items-center justify-center uppercase tracking-wider font-semibold text-stone-400 bg-stone-100 border border-stone-200">
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] inline-flex items-center justify-center uppercase tracking-wider font-semibold text-stone-400 bg-stone-100 border border-stone-200">
                     +{remainingTagsCount}
                   </span>
                 )}
