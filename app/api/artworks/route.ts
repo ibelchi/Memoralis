@@ -55,6 +55,7 @@ export async function GET(request: Request) {
     });
     return NextResponse.json(artworks);
   } catch (error) {
+    // Si veus un error aquí després d'una migració, reinicia el servidor 'npm run dev'
     console.error('Error fetching artworks:', error);
     return NextResponse.json({ error: 'Failed to fetch artworks' }, { status: 500 });
   }

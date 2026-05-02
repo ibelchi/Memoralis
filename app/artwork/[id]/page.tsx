@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { useToast } from "@/components/ToastProvider";
 
+import AuthorAvatar from "@/components/AuthorAvatar";
+
 function formatTime(seconds: number) {
   if (isNaN(seconds)) return "0:00";
   const m = Math.floor(seconds / 60);
@@ -118,7 +120,6 @@ export default function ArtworkPage({
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [authorAvatar, setAuthorAvatar] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -157,17 +158,6 @@ export default function ArtworkPage({
         const data = await res.json();
         setArtwork(data);
         setIsFavorite(data.isFavorite);
-        
-        // Fetch authors to find avatar
-        fetch("/api/authors")
-          .then(r => r.json())
-          .then(authors => {
-            const match = authors.find((a: any) => a.name === data.author);
-            if (match?.avatarPath) {
-              setAuthorAvatar(match.avatarPath);
-            }
-          })
-          .catch(console.error);
       } catch (err) {
         console.error(err);
       } finally {
@@ -199,13 +189,6 @@ export default function ArtworkPage({
   const displayDate = cleanDate.charAt(0).toUpperCase() + cleanDate.slice(1);
 
   const mainImage = artwork.images?.[0];
-
-  const getAuthorColor = (name: string) => {
-    const l = name.toLowerCase();
-    if (l.includes("gala")) return "bg-rose-100 text-rose-700";
-    if (l.includes("júlia") || l.includes("julia")) return "bg-sky-100 text-sky-700";
-    return "bg-stone-200 text-stone-700";
-  };
 
   const toggleFavorite = async () => {
     const newVal = !isFavorite;
@@ -354,17 +337,7 @@ export default function ArtworkPage({
             </div>
 
             <div className="flex items-center text-sm font-medium text-stone-600">
-              {authorAvatar ? (
-                <img 
-                  src={`/api/media/${authorAvatar}`} 
-                  alt={artwork.author}
-                  className="w-10 h-10 rounded-full object-cover mr-3 border-2 border-stone-100 shadow-sm"
-                />
-              ) : (
-                <span className={`w-10 h-10 rounded-full flex items-center justify-center text-sm mr-3 uppercase font-bold ${getAuthorColor(artwork.author)}`}>
-                  {artwork.author.charAt(0)}
-                </span>
-              )}
+              <AuthorAvatar name={artwork.author} size="w-10 h-10" className="mr-3" />
               <span>Obra de <span className="font-semibold text-stone-800 text-base">{artwork.author}</span></span>
             </div>
           </div>

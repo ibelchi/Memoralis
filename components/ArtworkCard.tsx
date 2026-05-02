@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Star } from "lucide-react";
 
+import AuthorAvatar from "./AuthorAvatar";
+
 interface Tag {
   id: string;
   name: string;
@@ -25,8 +27,6 @@ interface ArtworkCardProps {
   onToggleSelect?: (id: string) => void;
 }
 
-let cachedAuthorsPromise: Promise<any[]> | null = null;
-
 export default function ArtworkCard({
   id,
   title,
@@ -43,19 +43,6 @@ export default function ArtworkCard({
   const router = useRouter();
   const [favorite, setFavorite] = useState(isFavorite);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [authorAvatar, setAuthorAvatar] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!cachedAuthorsPromise) {
-      cachedAuthorsPromise = fetch("/api/authors").then(res => res.json());
-    }
-    cachedAuthorsPromise.then(authors => {
-      const match = authors.find((a: any) => a.name === author);
-      if (match?.avatarPath) {
-        setAuthorAvatar(match.avatarPath);
-      }
-    }).catch(console.error);
-  }, [author]);
 
   // Convertim a objecte Date si és un string
   const dateObj = typeof artDate === "string" ? new Date(artDate) : artDate;
@@ -68,14 +55,6 @@ export default function ArtworkCard({
   // Netegem possibles conjuncions com "de" o "del" i capitalitzem
   const cleanDate = formattedDate.replace(/\s+(de|del)\s+/g, " ");
   const displayDate = cleanDate.charAt(0).toUpperCase() + cleanDate.slice(1);
-
-  // Avatar colors
-  const getAuthorColor = (name: string) => {
-    const l = name.toLowerCase();
-    if (l.includes("gala")) return "bg-rose-100 text-rose-700";
-    if (l.includes("júlia") || l.includes("julia")) return "bg-sky-100 text-sky-700";
-    return "bg-stone-200 text-stone-700";
-  };
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (isSelectionMode) {
@@ -212,18 +191,8 @@ export default function ArtworkCard({
             {/* Footer de tags (alçada fixa) */}
             <div className="mt-auto">
               <div className="pt-4 flex items-center justify-between text-sm text-stone-500 font-medium border-t border-stone-50 mb-3">
-                <div className="flex items-center">
-                  {authorAvatar ? (
-                    <img 
-                      src={`/api/media/${authorAvatar}`} 
-                      alt={author}
-                      className="w-8 h-8 rounded-full object-cover mr-2 border border-stone-100 shadow-sm"
-                    />
-                  ) : (
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs mr-2 uppercase font-bold ${getAuthorColor(author)}`}>
-                      {author.charAt(0)}
-                    </span>
-                  )}
+                <div className="flex items-center gap-2">
+                  <AuthorAvatar name={author} size="w-8 h-8" />
                   {author}
                 </div>
                 <time dateTime={dateObj.toISOString()}>{displayDate}</time>
