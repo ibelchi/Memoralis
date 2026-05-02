@@ -46,3 +46,9 @@ model Tag {
   color    String    @default("#6366f1")
   artworks Artwork[]
 }
+
+model Author {
+  id         String  @id @default(cuid())
+  name       String  @unique
+  avatarPath String?
+}

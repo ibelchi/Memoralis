@@ -10,7 +10,7 @@ const MEDIA_PATH = process.env.MEDIA_PATH || './media';
  * @param subfolder The subfolder within MEDIA_PATH ('images' or 'audios').
  * @returns The relative path of the saved file (e.g., "images/uuid.jpg").
  */
-export async function saveFile(file: File, subfolder: 'images' | 'audios'): Promise<string> {
+export async function saveFile(file: File, subfolder: 'images' | 'audios' | 'avatars' | 'pdfs'): Promise<string> {
   try {
     const extension = path.extname(file.name);
     const filename = `${crypto.randomUUID()}${extension}`;

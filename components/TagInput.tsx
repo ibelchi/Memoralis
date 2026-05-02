@@ -6,6 +6,7 @@ interface Tag {
   id: string;
   name: string;
   color: string;
+  _count?: { artworks: number };
 }
 
 interface TagInputProps {
@@ -87,6 +88,14 @@ export default function TagInput({ selectedTags, onChange }: TagInputProps) {
     onChange(selectedTags.filter((t) => t.id !== id));
   };
 
+  const toggleTag = (tag: Tag) => {
+    if (selectedTags.find((t) => t.id === tag.id)) {
+      removeTag(tag.id);
+    } else {
+      addTag(tag);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -97,6 +106,10 @@ export default function TagInput({ selectedTags, onChange }: TagInputProps) {
     }
     if (e.key === "Escape") setShowSuggestions(false);
   };
+
+  const popularTags = [...allTags]
+    .sort((a, b) => (b._count?.artworks || 0) - (a._count?.artworks || 0))
+    .slice(0, 8);
 
   return (
     <div ref={wrapperRef} className="relative">
@@ -112,7 +125,7 @@ export default function TagInput({ selectedTags, onChange }: TagInputProps) {
             <button
               type="button"
               onClick={() => removeTag(tag.id)}
-              className="hover:opacity-70 leading-none"
+              className="hover:opacity-70 leading-none focus:outline-none"
             >
               ×
             </button>
@@ -128,20 +141,20 @@ export default function TagInput({ selectedTags, onChange }: TagInputProps) {
         onKeyDown={handleKeyDown}
         onFocus={() => input && setShowSuggestions(true)}
         placeholder="Afegeix etiquetes..."
-        className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
       />
 
       {/* Dropdown de suggestions */}
       {showSuggestions && (suggestions.length > 0 || input.trim()) && (
-        <ul className="absolute z-10 w-full bg-white border rounded shadow mt-1 max-h-48 overflow-y-auto">
+        <ul className="absolute z-10 w-full bg-white border border-stone-100 rounded-xl shadow-lg mt-1 max-h-48 overflow-y-auto">
           {suggestions.map((tag) => (
             <li
               key={tag.id}
               onClick={() => addTag(tag)}
-              className="px-3 py-2 text-sm cursor-pointer hover:bg-indigo-50 flex items-center gap-2"
+              className="px-4 py-2.5 text-sm cursor-pointer hover:bg-stone-50 flex items-center gap-2"
             >
               <span
-                className="w-2 h-2 rounded-full"
+                className="w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: tag.color }}
               />
               {tag.name}
@@ -152,12 +165,45 @@ export default function TagInput({ selectedTags, onChange }: TagInputProps) {
             !suggestions.find((s) => s.name === input.trim().toLowerCase()) && (
               <li
                 onClick={createAndAddTag}
-                className="px-3 py-2 text-sm cursor-pointer hover:bg-green-50 text-green-700 border-t"
+                className="px-4 py-2.5 text-sm cursor-pointer hover:bg-amber-50 text-amber-700 border-t border-stone-100 font-medium"
               >
-                + Crea "{input.trim().toLowerCase()}"
+                + Crear "{input.trim().toLowerCase()}"
               </li>
             )}
         </ul>
+      )}
+
+      {/* Suggeriments de tags (Populars) */}
+      {popularTags.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs font-medium text-stone-500 mb-2 uppercase tracking-wider">Suggeriments</p>
+          <div className="flex flex-wrap gap-2">
+            {popularTags.map((tag) => {
+              const isSelected = selectedTags.some((t) => t.id === tag.id);
+              return (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 border ${
+                    isSelected 
+                      ? "text-white shadow-sm" 
+                      : "bg-white text-stone-600 hover:bg-stone-50 border-stone-200 hover:border-stone-300"
+                  }`}
+                  style={isSelected ? { backgroundColor: tag.color, borderColor: tag.color } : {}}
+                >
+                  {!isSelected && (
+                    <span 
+                      className="w-2 h-2 rounded-full" 
+                      style={{ backgroundColor: tag.color }} 
+                    />
+                  )}
+                  {tag.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );

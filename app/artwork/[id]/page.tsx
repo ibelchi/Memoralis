@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 
 function formatTime(seconds: number) {
   if (isNaN(seconds)) return "0:00";
@@ -116,6 +117,30 @@ export default function ArtworkPage({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [authorAvatar, setAuthorAvatar] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (lightboxIndex === null || !artwork?.images?.length) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowRight") {
+        setLightboxIndex((prev) => (prev !== null && prev < artwork.images.length - 1 ? prev + 1 : prev));
+      }
+      if (e.key === "ArrowLeft") {
+        setLightboxIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : prev));
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [lightboxIndex, artwork]);
 
   useEffect(() => {
     const fetchArtwork = async () => {
@@ -131,6 +156,17 @@ export default function ArtworkPage({
         const data = await res.json();
         setArtwork(data);
         setIsFavorite(data.isFavorite);
+        
+        // Fetch authors to find avatar
+        fetch("/api/authors")
+          .then(r => r.json())
+          .then(authors => {
+            const match = authors.find((a: any) => a.name === data.author);
+            if (match?.avatarPath) {
+              setAuthorAvatar(match.avatarPath);
+            }
+          })
+          .catch(console.error);
       } catch (err) {
         console.error(err);
       } finally {
@@ -223,12 +259,16 @@ export default function ArtworkPage({
         <div className="w-full md:w-3/5 bg-stone-50 border-b md:border-b-0 md:border-r border-stone-100 self-stretch overflow-y-auto max-h-[85vh] md:max-h-none">
           {artwork.images && artwork.images.length > 0 ? (
             <div className="flex flex-col gap-6 p-2 md:p-6 bg-stone-100/50">
-              {artwork.images.map((img: any) => (
-                <div key={img.id} className="w-full bg-white rounded-2xl shadow-sm overflow-hidden border border-stone-200/50 flex justify-center items-center p-2 md:p-4">
+              {artwork.images.map((img: any, index: number) => (
+                <div 
+                  key={img.id} 
+                  className="w-full bg-white rounded-2xl shadow-sm overflow-hidden border border-stone-200/50 flex justify-center items-center p-2 md:p-4 cursor-zoom-in"
+                  onClick={() => setLightboxIndex(index)}
+                >
                   <img
                     src={`/api/media/${img.filePath}`}
                     alt={artwork.title ? `${artwork.title} - Imatge` : 'Imatge de l\'obra'}
-                    className="max-w-full max-h-[80vh] md:max-h-[85vh] w-auto h-auto block mx-auto object-contain"
+                    className="max-w-full max-h-[80vh] md:max-h-[85vh] w-auto h-auto block mx-auto object-contain hover:scale-[1.02] transition-transform duration-300"
                   />
                 </div>
               ))}
@@ -257,6 +297,23 @@ export default function ArtworkPage({
         {/* Right Column - Content */}
         <div className="w-full md:w-2/5 p-7 md:p-10 flex flex-col bg-white sticky top-0">
           
+          {/* Action Buttons Row (Top) */}
+          <div className="flex items-center justify-between gap-3 mb-8 pb-6 border-b border-stone-50">
+            <Link
+              href={`/artwork/${artwork.id}/edit`}
+              className="px-6 py-2 bg-stone-100 text-stone-700 hover:bg-stone-200 rounded-full font-medium transition-colors text-sm"
+            >
+              Editar obra
+            </Link>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="p-2 text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
+              aria-label="Esborrar obra"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+          
           {/* Header Info */}
           <div className="mb-8">
             <div className="flex justify-between items-start gap-4 mb-5">
@@ -282,10 +339,18 @@ export default function ArtworkPage({
             </div>
 
             <div className="flex items-center text-sm font-medium text-stone-600">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] mr-2 uppercase font-bold ${getAuthorColor(artwork.author)}`}>
-                {artwork.author.charAt(0)}
-              </span>
-              <span>Obra de <span className="font-semibold text-stone-800">{artwork.author}</span></span>
+              {authorAvatar ? (
+                <img 
+                  src={`/api/media/${authorAvatar}`} 
+                  alt={artwork.author}
+                  className="w-10 h-10 rounded-full object-cover mr-3 border-2 border-stone-100 shadow-sm"
+                />
+              ) : (
+                <span className={`w-10 h-10 rounded-full flex items-center justify-center text-sm mr-3 uppercase font-bold ${getAuthorColor(artwork.author)}`}>
+                  {artwork.author.charAt(0)}
+                </span>
+              )}
+              <span>Obra de <span className="font-semibold text-stone-800 text-base">{artwork.author}</span></span>
             </div>
           </div>
 
@@ -328,56 +393,103 @@ export default function ArtworkPage({
           {/* Spacer to push buttons to bottom if needed, though top-aligned is fine */}
           <div className="flex-grow"></div>
 
-          {/* Action Buttons */}
-          <div className="mt-8 flex items-center gap-3 border-t border-stone-100 pt-8">
-            <Link
-              href={`/artwork/${artwork.id}/edit`}
-              className="flex-1 py-2.5 bg-stone-100 text-stone-700 hover:bg-stone-200 rounded-full font-medium transition-colors text-sm text-center"
-            >
-              Editar obra
-            </Link>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="flex-1 py-2.5 bg-white border border-stone-200 text-stone-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-full font-medium transition-colors text-sm"
-            >
-              Esborrar obra
-            </button>
-          </div>
+          {/* Spacer to push content up if needed */}
+          <div className="flex-grow"></div>
         </div>
-      </div>
-
-      {/* Confirmation Modal */}
+      </div>      {/* Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onClick={() => !isDeleting && setShowDeleteModal(false)}></div>
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl relative z-10 animate-in zoom-in-95 fade-in duration-200">
-            <h3 className="text-xl font-medium text-stone-900 mb-3">Esborrar obra?</h3>
-            <p className="text-stone-500 text-sm mb-8 leading-relaxed">
-              L'obra{artwork.title ? <> "<span className="font-semibold text-stone-800">{artwork.title}</span>"</> : ''} s'eliminarà permanentment. Aquesta acció no es pot desfer.
+          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl relative z-10 animate-in zoom-in-95 fade-in duration-200 text-center">
+            <h3 className="text-2xl font-serif text-stone-900 mb-4">Esborrar obra?</h3>
+            <p className="text-stone-600 mb-8 leading-relaxed">
+              Vols esborrar aquesta obra? Aquesta acció no es pot desfer.
             </p>
-            <div className="flex flex-col gap-2">
+            <div className="flex gap-4">
+              <button
+                disabled={isDeleting}
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-3 border border-stone-200 rounded-full font-medium text-stone-600 hover:bg-stone-50 transition-colors disabled:opacity-50"
+              >
+                Cancel·lar
+              </button>
               <button
                 disabled={isDeleting}
                 onClick={handleDelete}
-                className="w-full py-3 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center"
+                className="flex-1 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isDeleting ? (
-                  <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : null}
-                Sí, esborra
-              </button>
-              <button
-                disabled={isDeleting}
-                onClick={() => setShowDeleteModal(false)}
-                className="w-full py-3 bg-transparent text-stone-500 font-medium hover:bg-stone-50 rounded-xl transition-colors disabled:opacity-50"
-              >
-                Cancel·lar
+                Esborrar
               </button>
             </div>
           </div>
+        </div>
+      )}      {/* Lightbox */}
+      {lightboxIndex !== null && artwork.images && artwork.images[lightboxIndex] && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/95 backdrop-blur-md p-4 md:p-12 animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setLightboxIndex(null)}
+        >
+          {/* Close button */}
+          <button 
+            className="absolute top-6 right-6 z-[110] p-2 text-stone-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+            aria-label="Tancar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Prev Arrow */}
+          {lightboxIndex > 0 && (
+            <button
+              className="absolute left-4 md:left-8 z-[110] p-3 md:p-4 text-stone-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }}
+              aria-label="Imatge anterior"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+          )}
+
+          {/* Image */}
+          <div className="relative max-w-full max-h-full flex items-center justify-center">
+            <img
+              src={`/api/media/${artwork.images[lightboxIndex].filePath}`}
+              alt="Imatge ampliada"
+              className="max-w-full max-h-[90vh] md:max-h-[95vh] w-auto h-auto object-contain select-none shadow-2xl rounded-sm animate-in zoom-in-95 duration-300"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+
+          {/* Next Arrow */}
+          {lightboxIndex < artwork.images.length - 1 && (
+            <button
+              className="absolute right-4 md:right-8 z-[110] p-3 md:p-4 text-stone-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }}
+              aria-label="Imatge següent"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          )}
+          
+          {/* Image counter */}
+          {artwork.images.length > 1 && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-stone-400 text-sm font-medium bg-black/40 px-4 py-1.5 rounded-full backdrop-blur-sm">
+              {lightboxIndex + 1} / {artwork.images.length}
+            </div>
+          )}
         </div>
       )}
     </main>

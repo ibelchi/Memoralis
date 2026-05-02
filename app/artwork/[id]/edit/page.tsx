@@ -216,7 +216,6 @@ export default function EditArtworkPage({
               <input
                 type="text"
                 id="title"
-                required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"

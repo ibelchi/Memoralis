@@ -174,12 +174,13 @@ Stack, model de dades, estructura de carpetes, configuració de Prisma i SQLite.
 **Fase 2 — MVP** ✅ Completada
 Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització per data.
 
-**Fase 3 — Millores funcionals**
-⏳ UX millorada (Galeria i Detall completades)
+**Fase 3 — Millores funcionals** ✅ Completada
+✅ UX millorada (Galeria i Detall completades)
 ✅ Gestió de multimèdia (esborrar fitxers individuals, suport multi-imatge)
 ✅ Càrrega massiva d'obres (Batch Upload) amb selector d'autora dinàmic
-✅ Suport per a fitxers PDF (conversió automàtica a imatges)
-✅ UX emocional: estats buits amb il·lustracions i overlays suavitzats
+✅ Suport per a fitxers PDF (conversió automàtica a imatges) i Àudio
+✅ UX emocional: estats buits, avatars d'autora i lightbox de detall
+✅ Gestió massiva: Mode selecció múltiple i esborrat seqüencial
 *Nou:* Implementar exportació simplificada de dades (portabilitat).
 
 **Fase 4 — Infraestructura**
@@ -215,17 +216,17 @@ Decisions de disseny preses i validades. Referència visual: disseny generat a G
 ### Borrat d'obres
 
 **Des de la pàgina de detall** (`artwork/[id]/page.tsx`):
-- Botó "Esborrar" al costat del botó d'editar
-- Estil neutre fins a hover (tint vermell suau en hover)
-- Modal de confirmació abans d'executar
-- En confirmar: `DELETE /api/artworks/[id]`, redirecció a la galeria
+- Icona de paperera (`Trash2` de lucide-react) a la part superior dreta de la info.
+- Color vermell (`red-500`) amb hover destacat.
+- Modal de confirmació abans d'executar.
+- En confirmar: `DELETE /api/artworks/[id]`, redirecció a la galeria.
 
 **Des de la galeria — mode selecció múltiple** (`app/page.tsx`):
-- Botó "Seleccionar" a la barra de filtres (al costat de "Més filtres")
-- En mode selecció: les cards mostren checkbox en hover; el botó canvia a "Cancel·lar"
-- Barra flotant inferior quan ≥1 card seleccionada: recompte + botó "Esborrar selecció" (vermell)
-- Modal de confirmació amb el nombre d'obres afectades
-- En confirmar: crida DELETE per cada id seleccionat, sortida del mode selecció, refresc de galeria
+- Botó "Seleccionar" a la barra de filtres (al costat de "Més filtres").
+- En mode selecció: les cards mostren checkbox a la cantonada superior esquerra; el botó canvia a "Cancel·lar".
+- Barra flotant inferior quan ≥1 card seleccionada: recompte ("N obra(es) seleccionada(es)") + botó "Esborrar selecció" (vermell).
+- Modal de confirmació amb el nombre d'obres afectades.
+- En confirmar: execució **seqüencial** de DELETE per cada id seleccionat, sortida del mode selecció, refresc de galeria.
 
 ### Dos modes de galeria (toggle a la capçalera o barra de filtres)
 
@@ -261,7 +262,8 @@ Decisions de disseny preses i validades. Referència visual: disseny generat a G
 - Títol de l'obra a 22px. L'estrella de favorit se situa just a la dreta del títol, alineada horitzontalment.
 - La data segueix el format "Mes Any" (ex: Abril 2026).
 - Àudios: Es mostra directament el reproductor customitzat amb suport per a desplaçament temporal (seeking).
-- Imatges: Suport per a múltiples imatges en seqüència vertical. Les imatges es mostren sempre senceres (`object-contain`) i tenen una alçada màxima restringida al viewport (`max-h-[85vh]`) per evitar scroll excessiu i garantir que es vegin senceres d'un sol cop d'ull.
+- Imatges: Suport per a múltiples imatges en seqüència vertical. Les imatges es mostren sempre senceres (`object-contain`) i tenen una alçada màxima restringida al viewport (`max-h-[85vh]`).
+- **Lightbox:** Clicar qualsevol imatge obre un overlay a pantalla completa amb navegació per fletxes i suport de teclat (`Esc`, fletxes).
 - Gestió de fitxers: Possibilitat d'eliminar imatges i àudios individuals directament des de la pàgina d'edició.
 
 **Flux de pujada (`upload/page.tsx`):**

@@ -12,7 +12,7 @@ export default function HomePage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [authors, setAuthors] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mode, setMode] = useState<GalleryMode>("descoberta");
+  const [mode, setMode] = useState<GalleryMode>("galeria");
 
   // Estats per a la selecció
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -111,11 +111,9 @@ export default function HomePage() {
   const handleBatchDelete = async () => {
     setIsDeleting(true);
     try {
-      await Promise.all(
-        Array.from(selectedIds).map(id => 
-          fetch(`/api/artworks/${id}`, { method: "DELETE" })
-        )
-      );
+      for (const id of Array.from(selectedIds)) {
+        await fetch(`/api/artworks/${id}`, { method: "DELETE" });
+      }
       // Refresquem
       await fetchFilteredArtworks();
       setIsSelectionMode(false);
@@ -279,7 +277,7 @@ export default function HomePage() {
       {/* Floating Action Bar */}
       {isSelectionMode && selectedIds.size > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-stone-900 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <span className="font-medium">{selectedIds.size} seleccionades</span>
+          <span className="font-medium">{selectedIds.size} obra(es) seleccionada(es)</span>
           <div className="w-px h-6 bg-stone-700"></div>
           <button
             onClick={() => setShowDeleteModal(true)}
@@ -300,7 +298,7 @@ export default function HomePage() {
           <div className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl relative z-10 animate-in zoom-in-95 fade-in duration-200">
             <h3 className="text-2xl font-serif text-stone-900 mb-4">Confirmar eliminació</h3>
             <p className="text-stone-600 mb-8 leading-relaxed">
-              Estàs segur que vols esborrar <span className="font-bold text-stone-900">{selectedIds.size}</span> obres? Aquesta acció no es pot desfer.
+              Vols esborrar <span className="font-bold text-stone-900">{selectedIds.size}</span> obra(es)? Aquesta acció no es pot desfer.
             </p>
             <div className="flex gap-4">
               <button
