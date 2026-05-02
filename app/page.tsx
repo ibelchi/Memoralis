@@ -29,7 +29,7 @@ export default function HomePage() {
     dateTo: "",
   });
 
-  const fetchFilteredArtworks = async () => {
+  const fetchFilteredArtworks = useCallback(async (isInitial = false) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -48,9 +48,9 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  // 1. Càrrega inicial d'autores (de totes les obres) i tags
+  // 1. Càrrega inicial d'autores i tags
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -65,13 +65,11 @@ export default function HomePage() {
         setTags(Array.isArray(allTags) ? allTags : []);
         
         if (Array.isArray(allArtworks)) {
-          // Extreure autores úniques
           const uniqueAuthors = Array.from(
             new Set(allArtworks.map((a: any) => a.author))
           ) as string[];
           setAuthors(uniqueAuthors.sort());
         }
-        
       } catch (error) {
         console.error("Error carregant dades inicials:", error);
       }
@@ -80,18 +78,23 @@ export default function HomePage() {
     fetchInitialData();
   }, []);
 
-  // 2. Fetch d'obres quan canvien els filtres
+  // 2. Fetch d'obres quan canvien els filtres (amb debounce)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       fetchFilteredArtworks();
     }, 300);
-
     return () => clearTimeout(timeoutId);
-  }, [filters]);
+  }, [fetchFilteredArtworks]);
+
+  // 3. Listener per a actualitzacions externes (deletions/restores)
+  useEffect(() => {
+    const handleUpdate = () => fetchFilteredArtworks();
+    window.addEventListener('artworks-updated', handleUpdate);
+    return () => window.removeEventListener('artworks-updated', handleUpdate);
+  }, [fetchFilteredArtworks]);
 
   const handleFilterChange = useCallback((newFilters: Filters) => {
     setFilters(newFilters);
-    // Si l'usuari fa servir filtres, forcem mode Galeria
     if (newFilters.q || newFilters.author || newFilters.tag || newFilters.dateFrom || newFilters.dateTo) {
       setMode("galeria");
     }
@@ -113,12 +116,6 @@ export default function HomePage() {
   };
 
   const { addToast } = useToast();
-
-  useEffect(() => {
-    const handleUpdate = () => fetchFilteredArtworks();
-    window.addEventListener('artworks-updated', handleUpdate);
-    return () => window.removeEventListener('artworks-updated', handleUpdate);
-  }, [filters]);
 
   const handleBatchDelete = async () => {
     setIsDeleting(true);
