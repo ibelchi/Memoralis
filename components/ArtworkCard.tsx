@@ -111,6 +111,17 @@ export default function ArtworkCard({
   const visibleTags = tags.slice(0, 3);
   const remainingTagsCount = tags.length > 3 ? tags.length - 3 : 0;
 
+  // Helper per contrast de color (text blanc o negre segons fons)
+  const getContrastColor = (hex: string) => {
+    // Si no és un hex vàlid, retornem blanc
+    if (!hex || hex.length < 6) return "white";
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? "black" : "white";
+  };
+
   return (
     <>
       <div className="relative h-full">
@@ -190,11 +201,13 @@ export default function ArtworkCard({
 
           {/* Informació de la targeta */}
           <div className="p-6 flex flex-col flex-grow">
-            <div className="flex justify-between items-start mb-2">
-              <h2 className="text-xl font-medium text-stone-800 line-clamp-1 group-hover:text-[#D4752A] transition-colors">
-                {title || <span className="text-stone-300 italic">Sense títol</span>}
-              </h2>
-            </div>
+            {title && (
+              <div className="flex justify-between items-start mb-2">
+                <h2 className="text-xl font-medium text-stone-800 line-clamp-1 group-hover:text-[#D4752A] transition-colors">
+                  {title}
+                </h2>
+              </div>
+            )}
 
             {/* Footer de tags (alçada fixa) */}
             <div className="mt-auto">
@@ -216,22 +229,27 @@ export default function ArtworkCard({
                 <time dateTime={dateObj.toISOString()}>{displayDate}</time>
               </div>
 
-              <div className="flex flex-wrap gap-1 min-h-[24px]">
-                {visibleTags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold text-white opacity-80 group-hover:opacity-100 transition-opacity"
-                    style={{ backgroundColor: tag.color }}
-                  >
-                    {tag.name}
-                  </span>
-                ))}
-                {remainingTagsCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold text-stone-400 bg-stone-100 border border-stone-200">
-                    +{remainingTagsCount}
-                  </span>
-                )}
-              </div>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 min-h-[24px]">
+                  {visibleTags.map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold group-hover:opacity-100 transition-opacity"
+                      style={{ 
+                        backgroundColor: tag.color,
+                        color: getContrastColor(tag.color)
+                      }}
+                    >
+                      {tag.name}
+                    </span>
+                  ))}
+                  {remainingTagsCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold text-stone-400 bg-stone-100 border border-stone-200">
+                      +{remainingTagsCount}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </Link>

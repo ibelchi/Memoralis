@@ -277,6 +277,13 @@ export default function HomePage() {
       {/* Floating Action Bar */}
       {isSelectionMode && selectedIds.size > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-stone-900 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="text-stone-400 hover:text-white text-sm font-medium transition-colors"
+          >
+            Deseleccionar tot
+          </button>
+          <div className="w-px h-6 bg-stone-700"></div>
           <span className="font-medium">{selectedIds.size} obra(es) seleccionada(es)</span>
           <div className="w-px h-6 bg-stone-700"></div>
           <button
