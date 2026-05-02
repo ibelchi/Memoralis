@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: "Arxiu emocional de records i creacions",
 };
 
+import { ToastProvider } from "@/components/ToastProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

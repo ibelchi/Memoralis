@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import { useToast } from "@/components/ToastProvider";
 
 function formatTime(seconds: number) {
   if (isNaN(seconds)) return "0:00";
@@ -112,10 +113,10 @@ export default function ArtworkPage({
   params: { id: string };
 }) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [artwork, setArtwork] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [authorAvatar, setAuthorAvatar] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -228,8 +229,14 @@ export default function ArtworkPage({
         method: "DELETE",
       });
       if (res.ok) {
+        addToast({
+          id: artwork.id,
+          title: artwork.title || "L'obra",
+          message: `${artwork.title || "L'obra"} eliminada`,
+          type: "delete"
+        });
+        window.dispatchEvent(new Event('artworks-updated'));
         router.push("/");
-        router.refresh();
       }
     } catch (err) {
       console.error("Error deleting artwork", err);
@@ -306,11 +313,19 @@ export default function ArtworkPage({
               Editar obra
             </Link>
             <button
-              onClick={() => setShowDeleteModal(true)}
-              className="p-2 text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="p-2 text-red-500 hover:text-red-700 transition-colors flex-shrink-0 disabled:opacity-50"
               aria-label="Esborrar obra"
             >
-              <Trash2 size={18} />
+              {isDeleting ? (
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <Trash2 size={18} />
+              )}
             </button>
           </div>
           
@@ -396,40 +411,7 @@ export default function ArtworkPage({
           {/* Spacer to push content up if needed */}
           <div className="flex-grow"></div>
         </div>
-      </div>      {/* Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onClick={() => !isDeleting && setShowDeleteModal(false)}></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl relative z-10 animate-in zoom-in-95 fade-in duration-200 text-center">
-            <h3 className="text-2xl font-serif text-stone-900 mb-4">Esborrar obra?</h3>
-            <p className="text-stone-600 mb-8 leading-relaxed">
-              Vols esborrar aquesta obra? Aquesta acció no es pot desfer.
-            </p>
-            <div className="flex gap-4">
-              <button
-                disabled={isDeleting}
-                onClick={() => setShowDeleteModal(false)}
-                className="flex-1 py-3 border border-stone-200 rounded-full font-medium text-stone-600 hover:bg-stone-50 transition-colors disabled:opacity-50"
-              >
-                Cancel·lar
-              </button>
-              <button
-                disabled={isDeleting}
-                onClick={handleDelete}
-                className="flex-1 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isDeleting ? (
-                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : null}
-                Esborrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}      {/* Lightbox */}
+      </div>      {/* Lightbox */}
       {lightboxIndex !== null && artwork.images && artwork.images[lightboxIndex] && (
         <div 
           className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/95 backdrop-blur-md p-4 md:p-12 animate-in fade-in duration-200"

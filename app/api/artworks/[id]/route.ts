@@ -31,11 +31,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.artwork.delete({
+    await prisma.artwork.update({
       where: { id: params.id },
+      data: { deletedAt: new Date() },
     });
 
-    return NextResponse.json({ message: 'Artwork deleted successfully' });
+    return NextResponse.json({ message: 'Artwork soft deleted successfully' });
   } catch (error) {
     console.error('Error deleting artwork:', error);
     // Handle case where artwork might not exist

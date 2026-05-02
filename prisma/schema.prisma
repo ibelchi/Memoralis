@@ -15,6 +15,7 @@ model Artwork {
   isFavorite  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete field. Esborrat permanent a futur (> 30 dies)
   sourcePdf   String?
 
   images  Image[]

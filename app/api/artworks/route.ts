@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const dateFrom = searchParams.get('dateFrom');
     const dateTo = searchParams.get('dateTo');
 
-    const where: any = { AND: [] };
+    const where: any = { deletedAt: null, AND: [] };
 
     if (q) {
       where.AND.push({
@@ -39,8 +39,8 @@ export async function GET(request: Request) {
       });
     }
 
-    // Si no hi ha filtres, netegem el where per evitar un AND buit (encara que Prisma ho gestiona)
-    const finalWhere = where.AND.length > 0 ? where : {};
+    // Si no hi ha filtres, el array AND estarà buit, però mantenim deletedAt
+    const finalWhere = where.AND.length > 0 ? where : { deletedAt: null };
 
     const artworks = await prisma.artwork.findMany({
       where: finalWhere,

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import ArtworkCard from "@/components/ArtworkCard";
 import GalleryFilters, { Filters, Tag } from "@/components/GalleryFilters";
+import { useToast } from "@/components/ToastProvider";
 
 type GalleryMode = "descoberta" | "galeria";
 
@@ -108,17 +109,33 @@ export default function HomePage() {
     setSelectedIds(newSelected);
   };
 
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    const handleUpdate = () => fetchFilteredArtworks();
+    window.addEventListener('artworks-updated', handleUpdate);
+    return () => window.removeEventListener('artworks-updated', handleUpdate);
+  }, [filters]);
+
   const handleBatchDelete = async () => {
     setIsDeleting(true);
     try {
-      for (const id of Array.from(selectedIds)) {
+      const idsArray = Array.from(selectedIds);
+      for (const id of idsArray) {
         await fetch(`/api/artworks/${id}`, { method: "DELETE" });
       }
+      
+      addToast({
+        id: idsArray.join(','),
+        title: `${idsArray.length} obres`,
+        message: `${idsArray.length} obra(es) eliminada(es)`,
+        type: 'delete',
+      });
+
       // Refresquem
       await fetchFilteredArtworks();
       setIsSelectionMode(false);
       setSelectedIds(new Set());
-      setShowDeleteModal(false);
     } catch (error) {
       console.error("Error deleting artworks", error);
     } finally {
@@ -287,49 +304,22 @@ export default function HomePage() {
           <span className="font-medium">{selectedIds.size} obra(es) seleccionada(es)</span>
           <div className="w-px h-6 bg-stone-700"></div>
           <button
-            onClick={() => setShowDeleteModal(true)}
-            className="text-rose-400 hover:text-rose-300 font-semibold transition-colors flex items-center gap-2"
+            onClick={handleBatchDelete}
+            disabled={isDeleting}
+            className="text-rose-400 hover:text-rose-300 font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
+            {isDeleting ? (
+              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            )}
             Esborrar selecció
           </button>
-        </div>
-      )}
-
-      {/* Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onClick={() => !isDeleting && setShowDeleteModal(false)}></div>
-          <div className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl relative z-10 animate-in zoom-in-95 fade-in duration-200">
-            <h3 className="text-2xl font-serif text-stone-900 mb-4">Confirmar eliminació</h3>
-            <p className="text-stone-600 mb-8 leading-relaxed">
-              Vols esborrar <span className="font-bold text-stone-900">{selectedIds.size}</span> obra(es)? Aquesta acció no es pot desfer.
-            </p>
-            <div className="flex gap-4">
-              <button
-                disabled={isDeleting}
-                onClick={() => setShowDeleteModal(false)}
-                className="flex-1 py-3 border border-stone-200 rounded-full font-medium text-stone-600 hover:bg-stone-50 transition-colors disabled:opacity-50"
-              >
-                Cancel·lar
-              </button>
-              <button
-                disabled={isDeleting}
-                onClick={handleBatchDelete}
-                className="flex-1 py-3 bg-rose-600 text-white rounded-full font-medium hover:bg-rose-700 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isDeleting ? (
-                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : null}
-                Esborrar
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </main>
