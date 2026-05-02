@@ -41,9 +41,10 @@ export default function HomePage() {
 
       const res = await fetch(`/api/artworks?${params.toString()}`);
       const data = await res.json();
-      setArtworks(data);
+      setArtworks(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error carregant obres:", error);
+      setArtworks([]);
     } finally {
       setLoading(false);
     }
@@ -61,13 +62,15 @@ export default function HomePage() {
         const allArtworks = await artworksRes.json();
         const allTags = await tagsRes.json();
         
-        setTags(allTags);
+        setTags(Array.isArray(allTags) ? allTags : []);
         
-        // Extreure autores úniques
-        const uniqueAuthors = Array.from(
-          new Set(allArtworks.map((a: any) => a.author))
-        ) as string[];
-        setAuthors(uniqueAuthors.sort());
+        if (Array.isArray(allArtworks)) {
+          // Extreure autores úniques
+          const uniqueAuthors = Array.from(
+            new Set(allArtworks.map((a: any) => a.author))
+          ) as string[];
+          setAuthors(uniqueAuthors.sort());
+        }
         
       } catch (error) {
         console.error("Error carregant dades inicials:", error);
@@ -145,11 +148,12 @@ export default function HomePage() {
 
   // 3. Càlcul de les obres a mostrar depenent del mode
   const displayedArtworks = useMemo(() => {
+    const list = Array.isArray(artworks) ? artworks : [];
     if (mode === "galeria") {
-      return artworks;
+      return list;
     }
     // Mode Descoberta: shuffle amb avantatge pels favorits
-    return [...artworks].sort((a, b) => {
+    return [...list].sort((a, b) => {
       const scoreA = Math.random() + (a.isFavorite ? 0.4 : 0);
       const scoreB = Math.random() + (b.isFavorite ? 0.4 : 0);
       return scoreB - scoreA;
