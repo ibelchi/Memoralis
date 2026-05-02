@@ -142,7 +142,7 @@ export default function ArtworkCard({
           )}
 
           {/* Imatge de portada */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden bg-white border-b border-stone-100">
+          <div className="relative aspect-[4/3] w-full overflow-hidden bg-white border-b border-stone-100 flex-shrink-0">
             {imageUrl ? (
               <img
                 src={imageUrl}
@@ -198,27 +198,25 @@ export default function ArtworkCard({
                 <time dateTime={dateObj.toISOString()}>{displayDate}</time>
               </div>
 
-              {tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 min-h-[24px]">
-                  {visibleTags.map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold group-hover:opacity-100 transition-opacity"
-                      style={{ 
-                        backgroundColor: tag.color,
-                        color: getContrastColor(tag.color)
-                      }}
-                    >
-                      {tag.name}
-                    </span>
-                  ))}
-                  {remainingTagsCount > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold text-stone-400 bg-stone-100 border border-stone-200">
-                      +{remainingTagsCount}
-                    </span>
-                  )}
-                </div>
-              )}
+              <div className="flex flex-wrap gap-1 min-h-[28px]">
+                {visibleTags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold group-hover:opacity-100 transition-opacity"
+                    style={{ 
+                      backgroundColor: tag.color,
+                      color: getContrastColor(tag.color)
+                    }}
+                  >
+                    {tag.name}
+                  </span>
+                ))}
+                {remainingTagsCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold text-stone-400 bg-stone-100 border border-stone-200">
+                    +{remainingTagsCount}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </Link>
