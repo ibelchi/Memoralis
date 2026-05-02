@@ -148,6 +148,19 @@ export default function BatchUploadGrid() {
     setIsUploading(false);
   };
 
+  const handleClearAll = () => {
+    if (window.confirm('Vols buidar tots els fitxers pendents?')) {
+      setItems(prev => {
+        prev.forEach(item => {
+          if (item.status !== 'success') {
+            URL.revokeObjectURL(item.preview);
+          }
+        });
+        return prev.filter(item => item.status === 'success');
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Controls globals */}
@@ -309,9 +322,17 @@ export default function BatchUploadGrid() {
         </div>
       )}
 
-      {/* Botó final d'enviament */}
+      {/* Botons finals */}
       {items.length > 0 && (
-        <div className="flex justify-end pt-6 border-t border-stone-200">
+        <div className="flex justify-between items-center pt-6 border-t border-stone-200">
+          <button
+            onClick={handleClearAll}
+            disabled={isUploading || !items.some(i => i.status !== 'success')}
+            className="px-6 py-3 text-stone-500 hover:text-red-600 font-medium transition-colors disabled:opacity-0"
+          >
+            Buidar tot
+          </button>
+          
           <button
             onClick={handleUploadAll}
             disabled={isUploading || items.every(i => i.status === 'success')}
