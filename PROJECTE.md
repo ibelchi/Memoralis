@@ -33,17 +33,22 @@ memoralis/
 │   ├── page.tsx                      # Galeria principal
 │   ├── layout.tsx                    # Layout global
 │   ├── admin/tags/page.tsx           # Gestió d'etiquetes
+│   ├── settings/page.tsx             # Pantalla de configuració (Autores, Dades, Galeria)
 │   ├── artwork/[id]/page.tsx         # Detall d'una obra
 │   ├── artwork/[id]/edit/page.tsx    # Edició d'obra
 │   ├── upload/page.tsx               # Formulari d'upload
 │   └── api/
 │       ├── artworks/route.ts         # GET llista, POST crea
 │       ├── artworks/[id]/route.ts    # GET, DELETE, PATCH per id
-│       ├── images/[id]/route.ts      # DELETE imatge individual
-│       ├── audios/[id]/route.ts      # DELETE àudio individual
+│       ├── images/[id]/route.ts      # DELETE imatge individual (BD + disc)
+│       ├── audios/[id]/route.ts      # DELETE àudio individual (BD + disc)
+│       ├── backup/route.ts           # GET genera ZIP de backup (DB + Media)
 │       ├── upload/image/route.ts     # POST puja imatge
 │       ├── upload/audio/route.ts     # POST puja àudio
 │       ├── upload/pdf/route.ts       # POST puja PDF i el converteix a imatges
+│       ├── authors/route.ts          # GET llista, POST crea autora
+│       ├── authors/[name]/route.ts   # PATCH color o reanomenar autora (transaccional)
+│       ├── authors/[name]/avatar/route.ts # POST puja/actualitza avatar
 │       ├── media/[...path]/route.ts  # Serveix fitxers (amb suport HTTP Range)
 │       └── auth/[...nextauth]/route.ts
 ├── components/
@@ -63,6 +68,7 @@ memoralis/
 │   └── migrations/
 ├── public/
 │   └── images/                       # Actius estàtics (favicon, empty-state, etc.)
+├── scripts/                          # Scripts de manteniment (find/clean orphans)
 ├── dev.db                            # Base de dades SQLite
 ├── prisma.config.ts                  # Configuració Prisma 7
 ├── media/                            # Fitxers multimèdia (fora de git)
@@ -105,7 +111,7 @@ model Image {
 model Audio {
   id          String  @id @default(cuid())
   artworkId   String
-  artwork     Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  artwork   Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
   filePath    String
   durationSec Int?
   description String?
@@ -116,6 +122,14 @@ model Tag {
   name     String    @unique
   color    String    @default("#6366f1")
   artworks Artwork[]
+}
+
+model Author {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  color    String    @default("#6366f1")
+  avatarPath String?
+  createdAt  DateTime @default(now())
 }
 ```
 
@@ -163,6 +177,24 @@ MEDIA_PATH="./media"
 | GET | `/api/tags` | Llista tots els tags amb recompte d'obres |
 | POST | `/api/tags` | Crea un tag nou (upsert) |
 | DELETE | `/api/tags/[id]` | Elimina un tag |
+| GET | `/api/authors` | Llista totes les autores (id, name, color, avatarPath) |
+| POST | `/api/authors` | Crea una autora nova |
+| PATCH | `/api/authors/[name]` | Actualitza color o reanomena (afecta Artworks) |
+| POST | `/api/authors/[name]/avatar` | Puja/actualitza la imatge d'avatar |
+| GET | `/api/backup` | Genera i descarrega un ZIP amb la BD i la carpeta media |
+
+---
+
+## Manteniment i Utilitats
+
+S'han creat scripts per a la gestió i neteja del sistema de fitxers, accessibles via `npx tsx`:
+
+- **Diagnòstic d'orfes:** `npx tsx --env-file=.env scripts/find-orphan-files.ts`
+  Identifica fitxers a `/media` que no tenen registre a la BD.
+- **Neteja d'orfes:** `npx tsx --env-file=.env scripts/clean-orphan-files.ts`
+  Esborra els fitxers orfes amb confirmació prèvia.
+
+A més, els handlers de `DELETE` de l'API estan configurats per esborrar automàticament el fitxer físic del disc un cop eliminat el registre de la base de dades.
 
 ---
 
@@ -181,7 +213,8 @@ Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització pe
 ✅ Suport per a fitxers PDF (conversió automàtica a imatges) i Àudio
 ✅ UX emocional: estats buits, avatars d'autora i lightbox de detall
 ✅ Gestió massiva: Mode selecció múltiple i esborrat seqüencial
-*Nou:* Implementar exportació simplificada de dades (portabilitat).
+✅ **Configuració i Autores:** Gestió d'autores, avatars, colors i preferències de galeria persistents.
+✅ **Backup i portabilitat:** Implementada exportació funcional en format ZIP (DB + Media).
 
 **Fase 4 — Infraestructura (en curs)**
 
@@ -219,7 +252,7 @@ Decisions de disseny preses i validades. Referència visual: disseny generat a G
 - Botó "+ Afegir obra" en píndola, color accent taronja (#D4752A), alineat a la dreta
 
 ### Filtres
-- Les autores (Gala / Júlia / Totes) són pills clicables sempre visibles a la barra principal
+- Les autores (Filtres clicables) són pills sempre visibles a la barra principal
 - La cerca per text s'integra a la mateixa fila de filtres
 - Els filtres secundaris (etiquetes, rang de dates, àudio) estan amagats per defecte darrere un botó "Més filtres" amb icona d'embut
 - El panell de filtres secundaris s'obre/tanca en clicar el botó
@@ -290,10 +323,36 @@ Decisions de disseny preses i validades. Referència visual: disseny generat a G
 
 ---
 
-## Pantalles pendents de revisió UX
+## Pantalla de Configuració (/settings)
 
-Les següents pantalles no han estat revisades encara i s'han de tractar en properes sessions:
-- `admin/tags/page.tsx` — Gestió d'etiquetes
+Accessible via icona de roda dentada (`Settings` de lucide-react) a la capçalera, a l'esquerra del botó "+ Afegir obra".
+
+### Disseny (Layout)
+- **Estructura de dues files** (Grid 1:1 en escriptori):
+  - **Fila 1**: Autores (esquerra) i Etiquetes (dreta).
+  - **Fila 2**: Dades (esquerra) i Galeria (dreta).
+- **Mòbil**: Una sola columna, ordre Autores → Etiquetes → Dades → Galeria.
+
+### Seccions
+1. **Autores**: 
+   - Llistat amb avatar circular (foto o inicial+color).
+   - Edició de nom *inline* amb actualització transaccional de totes les seves obres.
+   - Selector de color per a la identitat visual.
+   - Pujada d'avatars amb previsualització immediata.
+2. **Dades**: 
+   - Estadístiques en temps real: total d'obres i data de l'obra més antiga.
+   - **Exportar còpia**: Botó funcional que genera un ZIP descarregable amb tota la informació (DB i fitxers).
+3. **Etiquetes**: 
+   - Gestió *inline* completa: llistat amb recompte d'obres, eliminació i creació de tags nous.
+4. **Galeria**: 
+   - Selecció del mode per defecte en obrir l'app (**Descoberta** o **Galeria**).
+   - Preferència guardada a `localStorage` amb la clau `memoralis-default-mode`.
+
+### Gestió d'Avatars
+- Ubicació: `/public/avatars/{nameSlug}.jpg`
+- `nameSlug`: Nom de l'autora en minúscules, sense accents ni espais (ex: "martina", "pol").
+- Formats: JPG, PNG, WEBP.
+- Sistema de fallback automàtic a `AuthorAvatar.tsx`.
 
 ---
 

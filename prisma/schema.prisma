@@ -49,7 +49,9 @@ model Tag {
 }
 
 model Author {
-  id         String  @id @default(cuid())
-  name       String  @unique
+  id         String   @id @default(cuid())
+  name       String   @unique
+  color      String   @default("#6366f1")
   avatarPath String?
+  createdAt  DateTime @default(now())
 }

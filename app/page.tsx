@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { Settings } from "lucide-react";
 import ArtworkCard from "@/components/ArtworkCard";
 import GalleryFilters, { Filters, Tag } from "@/components/GalleryFilters";
 import { useToast } from "@/components/ToastProvider";
@@ -14,6 +15,14 @@ export default function HomePage() {
   const [authors, setAuthors] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<GalleryMode>("galeria");
+
+  // Llegir preferència de mode de localStorage al carregar
+  useEffect(() => {
+    const savedMode = localStorage.getItem("memoralis-default-mode");
+    if (savedMode === "descoberta" || savedMode === "galeria") {
+      setMode(savedMode as GalleryMode);
+    }
+  }, []);
 
   // Estats per a la selecció
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -127,8 +136,8 @@ export default function HomePage() {
       
       addToast({
         id: idsArray.join(','),
-        title: `${idsArray.length} obres`,
-        message: `${idsArray.length} obra(es) eliminada(es)`,
+        title: `${idsArray.length} ${idsArray.length === 1 ? 'obra' : 'obres'}`,
+        message: `${idsArray.length} ${idsArray.length === 1 ? 'obra' : 'obres'} eliminada${idsArray.length === 1 ? '' : 'es'}`,
         type: 'delete',
       });
 
@@ -200,6 +209,15 @@ export default function HomePage() {
                 Galeria
               </button>
             </div>
+            
+            {/* Botó de configuració */}
+            <Link 
+              href="/settings"
+              className="text-stone-400 hover:text-[#D4752A] transition-colors p-1"
+              aria-label="Configuració"
+            >
+              <Settings size={20} />
+            </Link>
 
             {/* Botó d'afegir obra */}
             <Link

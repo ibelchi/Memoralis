@@ -1,0 +1,23 @@
+import { config } from 'dotenv';
+config();
+import { prisma } from '../lib/prisma';
+
+async function main() {
+  await prisma.author.upsert({
+    where: { name: 'Gala' },
+    update: { color: '#be123c' },
+    create: { name: 'Gala', color: '#be123c' },
+  });
+  
+  await prisma.author.upsert({
+    where: { name: 'Júlia' },
+    update: { color: '#0369a1' },
+    create: { name: 'Júlia', color: '#0369a1' },
+  });
+  
+  console.log('Seeded authors: Gala, Júlia');
+}
+
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

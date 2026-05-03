@@ -61,7 +61,7 @@ export default function AdminTagsPage() {
   const deleteTag = async (id: string, artworkCount: number) => {
     if (artworkCount > 0) {
       const ok = confirm(
-        `Aquesta etiqueta té ${artworkCount} obra${artworkCount > 1 ? "es" : ""} associada${artworkCount > 1 ? "es" : ""}. Vols eliminar-la igualment?`
+        `Aquesta etiqueta té ${artworkCount} ${artworkCount === 1 ? "obra" : "obres"} associada${artworkCount === 1 ? "" : "es"}. Vols eliminar-la igualment?`
       );
       if (!ok) return;
     }
@@ -138,7 +138,7 @@ export default function AdminTagsPage() {
                     />
                     <span className="text-sm font-semibold text-stone-800">{tag.name}</span>
                     <span className="text-xs font-medium text-stone-500 bg-stone-200 px-2 py-0.5 rounded-full">
-                      {tag._count?.artworks || 0} obra{(tag._count?.artworks || 0) !== 1 ? "es" : ""}
+                      {tag._count?.artworks || 0} {(tag._count?.artworks || 0) === 1 ? "obra" : "obres"}
                     </span>
                   </div>
                   <button

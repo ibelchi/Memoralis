@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { unlink } from "fs/promises";
+import { prisma } from "@/lib/prisma";
+import fs from "fs/promises";
 import path from "path";
-
-const prisma = new PrismaClient();
 
 export async function DELETE(
   request: Request,
@@ -24,19 +22,20 @@ export async function DELETE(
       );
     }
 
-    // Esborrar el fitxer del sistema d'arxius
-    try {
-      const filePath = path.join(process.cwd(), "public", image.filePath);
-      await unlink(filePath);
-    } catch (err) {
-      console.error("Error en esborrar el fitxer físic de la imatge:", err);
-      // Continuem per esborrar l'entrada a la base de dades encara que falli l'esborrat físic
-    }
-
     // Esborrar la imatge de la base de dades
     await prisma.image.delete({
       where: { id },
     });
+
+    // Esborrar el fitxer del sistema d'arxius
+    const mediaPath = process.env.MEDIA_PATH || "./media";
+    const fullPath = path.join(process.cwd(), mediaPath, image.filePath);
+    try {
+      await fs.unlink(fullPath);
+    } catch (e) {
+      // Si el fitxer ja no existeix, continua igualment
+      console.warn("Fitxer no trobat al disc:", fullPath);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

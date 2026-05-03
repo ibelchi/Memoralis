@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { unlink } from "fs/promises";
+import fs from "fs/promises";
 import path from "path";
 
 export async function PATCH(
@@ -44,19 +44,20 @@ export async function DELETE(
       );
     }
 
-    // Esborrar el fitxer del sistema d'arxius
-    try {
-      const filePath = path.join(process.cwd(), "public", audio.filePath);
-      await unlink(filePath);
-    } catch (err) {
-      console.error("Error en esborrar el fitxer físic de l'àudio:", err);
-      // Continuem per esborrar l'entrada a la base de dades encara que falli l'esborrat físic
-    }
-
     // Esborrar l'àudio de la base de dades
     await prisma.audio.delete({
       where: { id },
     });
+
+    // Esborrar el fitxer del sistema d'arxius
+    const mediaPath = process.env.MEDIA_PATH || './media';
+    const fullPath = path.join(process.cwd(), mediaPath, audio.filePath);
+    try {
+      await fs.unlink(fullPath);
+    } catch (e) {
+      // Si el fitxer ja no existeix, continua igualment
+      console.warn('Fitxer no trobat al disc:', fullPath);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

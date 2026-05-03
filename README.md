@@ -14,6 +14,8 @@ A diferència d'una galeria de fotos convencional, Memoralis se centra en l'**em
 - **Timeline Organitzat:** Visualitza les creacions per data original de creació.
 - **Privacitat per Disseny:** Storage local i base de dades SQLite per a un control total de les dades.
 - **Disseny Minimalista:** Interfície neta centrada en el contingut visual, amb estats buits il·lustrats.
+- **Gestió d'Autores:** Personalitza la identitat visual de cada filla amb colors i avatars propis.
+- **Configuració Flexible:** Defineix el mode de visualització per defecte i gestiona l'arxiu des d'un sol lloc.
 
 ## 🛠️ Stack Tecnològic
 
@@ -57,6 +59,7 @@ Obre [http://localhost:3000](http://localhost:3000) al teu navegador per veure e
 - [x] **Interfície de cerca i galeria:** Implementació de filtres avançats, indicadors d'àudio visuals i optimització de la visualització d'imatges sense retalls.
 - [x] **Suport PDF:** Processament automàtic de fitxers PDF per a quaderns i llibres d'art.
 - [x] **Exploració aleatòria:** Mode "Descoberta" per redescobrir records a l'atzar.
+- [x] **Gestió d'autores i configuració:** Pantalla dedicada per a la gestió d'avatars, colors i preferències de l'aplicació.
 - [ ] **Exportació simplificada:** Implementar un sistema per exportar tot el contingut (imatges, àudios i metadades) de la manera més senzilla possible per garantir la portabilitat dels records.
 - [ ] **Personalització de la quadrícula:** Permetre configurar la quantitat de columnes i el tamany de l'espaiat a la galeria principal.
 - [ ] Dockerització per a un desplegament més senzill.
