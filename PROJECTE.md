@@ -159,6 +159,7 @@ MEDIA_PATH="./media"
 - Usar rutes absolutes amb `path.join(process.cwd(), ...)` per al path del .db.
 - Usar `require` per carregar els binaris natius de better-sqlite3.
 - Per al build en Docker, s'ha configurat `next.config.mjs` per ignorar errors de linting i TypeScript, i s'han afegit variables d'entorn dummy al `Dockerfile` per permetre la compilació sense base de dades activa.
+- **PWA Icons:** Si les icones (ex: `icon-192.png`) són realment JPEGs, cal declarar `type: "image/jpeg"` al manifest encara que l'extensió sigui `.png`, altrament els navegadors mòbils fallaran i mostraran una icona genèrica.
 - Si canvies alguna cosa al schema.prisma, executa `npx prisma generate`.
 
 ---
@@ -228,8 +229,9 @@ Components: Dockerfile per a Next.js 14, docker-compose.yml amb volums persisten
 
 ### 4b — Accés mòbil (PWA) ✅ Completada
 Objectiu: accedir a Memoralis des del telèfon com si fos una app nativa, sense passar per cap App Store.
-Estratègia: Progressive Web App (PWA) amb manifest.json i Service Worker bàsic.
+Estratègia: Progressive Web App (PWA) amb `manifest.json`, Service Worker (Network-first amb cache d'icones i manifest) i components de registre client.
 Experiència: instal·lable a iOS/Android, captura directa de càmera i micròfon.
+Configuració crítica: les icones han d'estar declarades amb el MIME type real al `manifest.json` (especialment si són JPEGs amb extensió `.png`) per evitar que els navegadors mòbils mostrin icones genèriques de fallback.
 
 ### 4c — Backup i portabilitat
 Estratègia: l'app es basa en dos components a preservar:
@@ -240,9 +242,43 @@ Backup automàtic: afegir la carpeta del projecte al software de backup existent
 
 Backup manual: botó "Exportar còpia" a l'app (fase futura) que genera un .zip amb dev.db + /media. Per restaurar: instal·lar Memoralis, substituir dev.db i /media pel contingut del .zip.
 
-**Fase 5 — Open Source** ✅ En curs
-Documentació pública, guia d'instal·lació, llicència MIT.
-*Deute tècnic:* Netejar l'estructura de codi i extreure components (ex: UploadForm).
+**Fase 5 — Tancament funcional** 🔄 En curs
+
+### 5a — Visualitzador d'àudio
+Objectiu: tancament estètic de la pàgina de detall.
+Estratègia: Web Audio API + canvas. Animació d'espectre de freqüències o ones sota el reproductor d'àudio. Color accent taronja al 40% d'opacitat.
+Activable/desactivable amb botó discret. Preferència persistida a localStorage amb clau `memoralis-audio-visualizer`.
+Implementar com a última capa estètica, un cop la resta de la pantalla de detall estigui consolidada.
+
+### 5b — "Avui fa X anys"
+Objectiu: afegir una dimensió emocional i temporal a l'app.
+Estratègia: Vista o widget que mostra obres creades exactament 1, 2, 3... anys enrere respecte al dia actual, basant-se en el camp `artDate`.
+Accessible des de la galeria principal (icona de calendari o pill destacada).
+Lògica: query filtrant per mes+dia de `artDate` ignorant l'any. Si no hi ha obres, la vista resta amagada o mostra un estat buit discret.
+
+### 5c — Revisió UX mòbil
+Objectiu: polir l'experiència en dispositius mòbils, que és l'ús majoritari real.
+Àrees a revisar:
+- Mides de botons i zones tàctils (mínim 44px)
+- Espaiats i marges en pantalles estretes
+- Formulari d'upload optimitzat per a mòbil
+- Navegació PWA (gestos, scroll, comportament del teclat virtual)
+- Lightbox tàctil (swipe entre imatges)
+- Reproductor d'àudio accessible amb una sola mà
+
+### 5d — Refactor i preparació Open Source
+Objectiu: que el codi sigui llegible i contribuïble per tercers.
+Tasques:
+- Extreure components pendents (ex: UploadForm en subcomponents)
+- Netejar codi mort i comentaris de desenvolupament
+- Afegir llicència MIT (`LICENSE`)
+- Escriure `README.md` públic: què és, captures, instal·lació Docker, configuració, contribució
+- Revisar i consolidar `.gitignore`
+- Versió 1.0.0 al `package.json`
+
+**Fase 6 — Open Source Launch** ⏳ Pendent
+Publicació del repositori a GitHub amb documentació completa.
+Etiquetes: `self-hosted`, `family`, `memories`, `nextjs`, `sqlite`, `docker`.
 
 ---
 
@@ -366,8 +402,6 @@ Accessible via icona de roda dentada (`Settings` de lucide-react) a la capçaler
 - **Cerca col·lapsable:** ✅ Especificat i inclòs al disseny de filtres
 - **Configuració de Galeria:** Slider o selectors per canviar el número de columnes (densitat) de la quadrícula.
 - **Presentació (Slideshow):** Mode de reproducció automàtica que passi les fotos i reprodueixi els àudios de forma seqüencial.
-- **Revisió UX mòbil:** Polir detalls de la interfície en dispositius mòbils (mida de botons, espaiats, optimització del formulari d'upload i navegació PWA).
-- **Visualitzador d'àudio:** Animació d'espectre de freqüències o ones sota el reproductor d'àudio a la pàgina de detall. Web Audio API + canvas. Color accent taronja al 40% d'opacitat. Activable/desactivable amb botó discret, preferència persistida a localStorage. Implementar com a última capa estètica, un cop la resta de la pantalla de detall estigui consolidada.
 
 ---
 

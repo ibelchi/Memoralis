@@ -25,7 +25,12 @@ export const metadata: Metadata = {
     title: "Memoralis",
   },
   icons: {
-    apple: "/icons/icon-192.png",
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/jpeg" },
+    ],
+    apple: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/jpeg" },
+    ],
   },
 };
 

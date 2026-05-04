@@ -1,5 +1,11 @@
-const CACHE_NAME = 'memoralis-v1';
-const PRECACHE_URLS = ['/', '/upload'];
+const CACHE_NAME = 'memoralis-v4';
+const PRECACHE_URLS = [
+  '/', 
+  '/upload',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
