@@ -402,7 +402,8 @@ Accessible via icona de roda dentada (`Settings` de lucide-react) a la capçaler
 - **Mode Descoberta / Aleatori:** ✅ Implementat
 - **Cerca col·lapsable:** ✅ Implementat
 - **Backup ZIP:** ✅ Implementat
-- **Visualitzador d'àudio:** → Fase 5a
+- **Retallar imatges en upload o edició i girar-les 90 o 180 graus:** → Algun moment de la Fase 5
+- **Visualitzador d'àudio:** ✅ Implementat (Fase 5a)
 - **"Avui fa X anys":** → Fase 5b
 - **Revisió UX mòbil:** → Fase 5c
 - **Refactor + Open Source:** → Fase 5d

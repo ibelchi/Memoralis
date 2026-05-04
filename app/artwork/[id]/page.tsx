@@ -20,10 +20,107 @@ function CustomAudioPlayer({ audio }: { audio: any }) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [showVisualizer, setShowVisualizer] = useState(false);
+  
   const audioRef = useRef<HTMLAudioElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const animationFrameRef = useRef<number>();
+
+  // Persistence for visualizer preference
+  useEffect(() => {
+    const saved = localStorage.getItem("memoralis-audio-visualizer");
+    if (saved === "true") setShowVisualizer(true);
+  }, []);
+
+  const toggleVisualizer = () => {
+    const newVal = !showVisualizer;
+    setShowVisualizer(newVal);
+    localStorage.setItem("memoralis-audio-visualizer", String(newVal));
+  };
+
+  const initAudioContext = () => {
+    if (!audioContextRef.current && audioRef.current) {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioContextClass();
+      const analyser = ctx.createAnalyser();
+      const source = ctx.createMediaElementSource(audioRef.current);
+      
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+      
+      analyser.fftSize = 256;
+      
+      audioContextRef.current = ctx;
+      analyserRef.current = analyser;
+      sourceRef.current = source;
+    }
+    
+    if (audioContextRef.current?.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+  };
+
+  const draw = () => {
+    if (!canvasRef.current || !analyserRef.current || !showVisualizer) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const analyser = analyserRef.current;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    const renderFrame = () => {
+      animationFrameRef.current = requestAnimationFrame(renderFrame);
+      analyser.getByteFrequencyData(dataArray);
+      
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      ctx.clearRect(0, 0, width, height);
+      
+      // Visual style: Frequency bars with orange accent (#D4752A) at 40% opacity
+      const barWidth = (width / bufferLength) * 2.5;
+      let barHeight;
+      let x = 0;
+      
+      ctx.fillStyle = 'rgba(212, 117, 42, 0.4)'; // #D4752A with 0.4 opacity
+      
+      for (let i = 0; i < bufferLength; i++) {
+        barHeight = (dataArray[i] / 255) * height;
+        
+        // Draw bars from the bottom
+        ctx.fillRect(x, height - barHeight, barWidth, barHeight);
+        
+        x += barWidth + 1;
+      }
+    };
+    
+    renderFrame();
+  };
+
+  useEffect(() => {
+    if (isPlaying && showVisualizer) {
+      draw();
+    } else {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    }
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isPlaying, showVisualizer]);
 
   const togglePlay = () => {
     if (audioRef.current) {
+      initAudioContext();
       if (isPlaying) {
         audioRef.current.pause();
       } else {
@@ -68,42 +165,67 @@ function CustomAudioPlayer({ audio }: { audio: any }) {
   };
 
   return (
-    <div className="bg-stone-50 rounded-2xl p-4 border border-stone-100 flex items-center gap-4">
-      <audio
-        ref={audioRef}
-        src={`/api/media/${audio.filePath}`}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        onEnded={handleEnded}
-      />
-      <button
-        onClick={togglePlay}
-        className="flex-shrink-0 w-10 h-10 rounded-full bg-[#D4752A] text-white flex items-center justify-center hover:bg-orange-700 transition-colors shadow-sm"
-      >
-        {isPlaying ? (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-            <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-0.5">
-            <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
-          </svg>
+    <div className="flex flex-col gap-2">
+      <div className="bg-stone-50 rounded-2xl p-4 border border-stone-100 flex items-center gap-4 relative overflow-hidden">
+        {/* Audio Visualizer Canvas - Background Layer */}
+        {showVisualizer && (
+          <canvas 
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            width={400}
+            height={80}
+          />
         )}
-      </button>
-
-      <div className="flex-1 flex flex-col gap-1">
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={isNaN(progress) ? 0 : progress}
-          onChange={handleSeek}
-          className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-[#D4752A]"
+        
+        <audio
+          ref={audioRef}
+          src={`/api/media/${audio.filePath}`}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={handleEnded}
+          crossOrigin="anonymous"
         />
-        <div className="flex justify-between text-xs text-stone-400 font-medium font-mono">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
+        
+        <button
+          onClick={togglePlay}
+          className="relative z-10 flex-shrink-0 w-10 h-10 rounded-full bg-[#D4752A] text-white flex items-center justify-center hover:bg-orange-700 transition-colors shadow-sm"
+        >
+          {isPlaying ? (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+              <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-0.5">
+              <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
+            </svg>
+          )}
+        </button>
+
+        <div className="relative z-10 flex-1 flex flex-col gap-1">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={isNaN(progress) ? 0 : progress}
+            onChange={handleSeek}
+            className="w-full h-1.5 bg-stone-200/50 rounded-lg appearance-none cursor-pointer accent-[#D4752A]"
+          />
+          <div className="flex justify-between text-xs text-stone-500 font-medium font-mono">
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
         </div>
+
+        {/* Visualizer Toggle Button */}
+        <button
+          onClick={toggleVisualizer}
+          className={`relative z-10 p-2 rounded-lg transition-colors ${showVisualizer ? 'text-[#D4752A] bg-orange-50' : 'text-stone-300 hover:text-stone-500 hover:bg-stone-100'}`}
+          title={showVisualizer ? "Amagar visualitzador" : "Mostrar visualitzador"}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+            <path d="M2 10v3" /><path d="M6 6v11" /><path d="M10 3v18" /><path d="M14 8v7" /><path d="M18 5v13" /><path d="M22 10v3" />
+          </svg>
+        </button>
       </div>
     </div>
   );
