@@ -366,6 +366,7 @@ Accessible via icona de roda dentada (`Settings` de lucide-react) a la capçaler
 - **Cerca col·lapsable:** ✅ Especificat i inclòs al disseny de filtres
 - **Configuració de Galeria:** Slider o selectors per canviar el número de columnes (densitat) de la quadrícula.
 - **Presentació (Slideshow):** Mode de reproducció automàtica que passi les fotos i reprodueixi els àudios de forma seqüencial.
+- **Revisió UX mòbil:** Polir detalls de la interfície en dispositius mòbils (mida de botons, espaiats, optimització del formulari d'upload i navegació PWA).
 - **Visualitzador d'àudio:** Animació d'espectre de freqüències o ones sota el reproductor d'àudio a la pàgina de detall. Web Audio API + canvas. Color accent taronja al 40% d'opacitat. Activable/desactivable amb botó discret, preferència persistida a localStorage. Implementar com a última capa estètica, un cop la resta de la pantalla de detall estigui consolidada.
 
 ---
