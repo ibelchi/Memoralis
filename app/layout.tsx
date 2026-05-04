@@ -13,12 +13,28 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+import { Viewport } from "next";
+
 export const metadata: Metadata = {
   title: "Memoralis",
   description: "Arxiu emocional de records i creacions",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Memoralis",
+  },
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#D4752A",
 };
 
 import { ToastProvider } from "@/components/ToastProvider";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
 export default function RootLayout({
   children,
@@ -30,6 +46,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <ServiceWorkerRegistration />
         <ToastProvider>
           {children}
         </ToastProvider>

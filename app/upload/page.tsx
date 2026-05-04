@@ -259,12 +259,21 @@ export default function UploadPage() {
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-col sm:flex-row gap-3">
                       <div className="relative flex-1">
-                        <input
-                          type="file"
-                          accept="image/*,application/pdf"
-                          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                          className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
-                        />
+                        <div className="flex flex-col gap-3">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                            className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                          />
+                          <input
+                            type="file"
+                            accept="application/pdf"
+                            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                            className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100"
+                          />
+                        </div>
                         {isPdf && (
                           <span className="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -302,6 +311,7 @@ export default function UploadPage() {
                       <input
                         type="file"
                         accept="audio/*"
+                        capture="microphone"
                         onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
                         className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-[#D4752A] hover:file:bg-orange-100"
                       />

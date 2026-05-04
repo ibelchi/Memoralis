@@ -1,0 +1,27 @@
+
+# INSTRUCCIONS DE PRIMER ÚS:
+# 1. Crea la carpeta de dades a l'arrel del teu projecte:
+#    mkdir -p ./data/media
+# 2. Copia el teu fitxer dev.db existent (si en tens un) a la nova carpeta:
+#    cp dev.db ./data/memoralis.db
+# 3. Arrenca l'aplicació en segon pla (es farà el build si és el primer cop):
+#    docker compose up -d
+# 4. Pots veure els logs amb:
+#    docker compose logs -f
+
+services:
+  memoralis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: memoralis_app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data/memoralis.db:/app/memoralis.db
+      - ./data/media:/app/media
+    environment:
+      - DATABASE_URL=file:/app/memoralis.db
+      - MEDIA_PATH=/app/media
+      - NODE_ENV=production
+    restart: unless-stopped

@@ -16,6 +16,8 @@ A diferència d'una galeria de fotos convencional, Memoralis se centra en l'**em
 - **Disseny Minimalista:** Interfície neta centrada en el contingut visual, amb estats buits il·lustrats.
 - **Gestió d'Autores:** Personalitza la identitat visual de cada filla amb colors i avatars propis.
 - **Configuració Flexible:** Defineix el mode de visualització per defecte i gestiona l'arxiu des d'un sol lloc.
+- **Suport PWA:** Instal·la Memoralis al teu telèfon com una app nativa amb captura directa de càmera i micròfon.
+- **Docker Ready:** Desplega l'app fàcilment amb Docker Compose per a ús personal en NAS o servidor domèstic.
 
 ## 🛠️ Stack Tecnològic
 
@@ -53,6 +55,16 @@ npm run dev
 
 Obre [http://localhost:3000](http://localhost:3000) al teu navegador per veure el resultat.
 
+### 🐳 Docker (Recomanat)
+
+Si tens Docker instal·lat, pots arrencar l'aplicació amb una sola comanda:
+
+```bash
+docker compose up -d --build
+```
+
+L'aplicació estarà disponible a `http://localhost:3000`. Les dades i fitxers es persistiran a la carpeta `./data`.
+
 ## 🗺️ Roadmap
 
 - [x] **Gestió de multimèdia avançada:** Suport per a múltiples imatges, eliminació individual de fitxers i millores en la reproducció d'àudio (seeking).
@@ -60,9 +72,10 @@ Obre [http://localhost:3000](http://localhost:3000) al teu navegador per veure e
 - [x] **Suport PDF:** Processament automàtic de fitxers PDF per a quaderns i llibres d'art.
 - [x] **Exploració aleatòria:** Mode "Descoberta" per redescobrir records a l'atzar.
 - [x] **Gestió d'autores i configuració:** Pantalla dedicada per a la gestió d'avatars, colors i preferències de l'aplicació.
-- [ ] **Exportació simplificada:** Implementar un sistema per exportar tot el contingut (imatges, àudios i metadades) de la manera més senzilla possible per garantir la portabilitat dels records.
+- [x] **Exportació simplificada:** Implementada l'exportació en ZIP (DB + fitxers) des de Configuració.
 - [ ] **Personalització de la quadrícula:** Permetre configurar la quantitat de columnes i el tamany de l'espaiat a la galeria principal.
-- [ ] Dockerització per a un desplegament més senzill.
+- [x] **Dockerització:** Desplegament senzill amb Docker Compose.
+- [x] **Suport PWA:** App instal·lable amb experiència mòbil nativa.
 
 
 ## 📝 Llicència
