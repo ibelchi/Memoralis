@@ -397,11 +397,27 @@ Accessible via icona de roda dentada (`Settings` de lucide-react) a la capçaler
 
 ## Millores i idees futures
 
-- **Favorits:** ✅ Especificat (vegeu model de dades i especificació UX)
-- **Mode Descoberta / Aleatori:** ✅ Especificat (vegeu especificació UX)
-- **Cerca col·lapsable:** ✅ Especificat i inclòs al disseny de filtres
-- **Configuració de Galeria:** Slider o selectors per canviar el número de columnes (densitat) de la quadrícula.
-- **Presentació (Slideshow):** Mode de reproducció automàtica que passi les fotos i reprodueixi els àudios de forma seqüencial.
+### Implementades o en curs
+- **Favorits:** ✅ Implementat
+- **Mode Descoberta / Aleatori:** ✅ Implementat
+- **Cerca col·lapsable:** ✅ Implementat
+- **Backup ZIP:** ✅ Implementat
+- **Visualitzador d'àudio:** → Fase 5a
+- **"Avui fa X anys":** → Fase 5b
+- **Revisió UX mòbil:** → Fase 5c
+- **Refactor + Open Source:** → Fase 5d
+
+### Descartades (amb justificació)
+- **Slideshow:** Descartada. Trenca la filosofia de contemplació pausada de l'app. Memoralis és per viure una obra a la vegada.
+- **Mode fosc:** No s'implementa al MVP. Base CSS preparada per si cal.
+- **Carpetes/Col·leccions:** Descartada. Tags + filtre autora + dates cobreixen la necessitat.
+
+### Futures (v1.1 si sorgeix la necessitat)
+- **Cerca per veu:** Web Speech API integrada al camp de cerca. Útil en ús mòbil amb mans ocupades.
+- **Export selectiu:** ZIP d'una obra concreta per compartir amb avis.
+- **Notes privades de context:** Donar més protagonisme al camp `description` (ex: "ho va fer mentre estava malalta").
+- **"Avui fa X anys" widget a la galeria:** Extensió de 5b com a widget persistent a la galeria principal.
+- **Densitat de quadrícula configurable:** Slider per canviar columnes.
 
 ---
 
@@ -417,3 +433,13 @@ Accessible via icona de roda dentada (`Settings` de lucide-react) a la capçaler
 
 Afegit enllaç discret "belchi" just sota el títol "Memoralis" a la capçalera (layout.tsx o el component de capçalera corresponent).
 Text: "belchi" · Mida: text-xs · Color: neutre/gris · Enllaç: https://ibelchi.github.io · Target: _blank
+
+---
+
+## Versions
+
+| Versió | Estat | Contingut |
+|---|---|---|
+| 0.1 — 0.4 | ✅ Completada | Fases 1–4: Arquitectura, MVP, Millores, Infra |
+| 1.0 | 🔄 En curs | Fase 5: Visualitzador, Avui fa X anys, UX mòbil, Refactor |
+| 1.0 launch | ⏳ Pendent | Fase 6: Publicació Open Source |
