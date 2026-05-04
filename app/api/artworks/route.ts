@@ -67,19 +67,37 @@ export async function POST(request: Request) {
     const { title, description, author, artDate, tags } = await request.json();
 
     if (!author || !artDate) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Falten camps obligatoris (autora o data)' }, { status: 400 });
     }
+
+    // Task 2: Robust date parsing
+    const parsedDate = new Date(artDate);
+    if (isNaN(parsedDate.getTime())) {
+      return NextResponse.json({ error: 'Data de creació invàlida' }, { status: 400 });
+    }
+
+    // Task 3: Ensure author exists (validation/consistency)
+    // We check if the author exists, if not we create it to keep the Author table in sync
+    await prisma.author.upsert({
+      where: { name: author },
+      update: {},
+      create: { name: author }
+    });
+
+    // Task 4: Fix duplicate tags error in Prisma connectOrCreate
+    // We de-duplicate and normalize tags before processing
+    const normalizedTags = Array.from(new Set((tags ?? []).map((t: string) => t.trim().toLowerCase()))).filter(Boolean);
 
     const artwork = await prisma.artwork.create({
       data: {
         title: title || null,
-        description,
+        description: description || null,
         author,
-        artDate: new Date(artDate),
+        artDate: parsedDate,
         tags: {
-          connectOrCreate: (tags ?? []).map((name: string) => ({
-            where: { name: name.trim().toLowerCase() },
-            create: { name: name.trim().toLowerCase() },
+          connectOrCreate: normalizedTags.map((name) => ({
+            where: { name },
+            create: { name },
           })),
         },
       },
@@ -87,8 +105,11 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(artwork, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating artwork:", error);
-    return NextResponse.json({ error: "Error creating artwork" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Error al crear l'obra a la base de dades",
+      details: error.message 
+    }, { status: 500 });
   }
 }

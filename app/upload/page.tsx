@@ -28,7 +28,13 @@ export default function UploadPage() {
   const [uploadedPdfPages, setUploadedPdfPages] = useState<number | null>(null);
   const [uploadedAudio, setUploadedAudio] = useState(false);
 
-  const isPdf = imageFile?.type === 'application/pdf';
+  // Refs per als inputs ocults
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
+  // Estats de progrés individuals
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
 
   const handleCreateArtwork = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +50,7 @@ export default function UploadPage() {
           author, 
           artDate, 
           description,
-          tags: selectedTags.map(t => t.name) // Enviem només els noms
+          tags: selectedTags.map(t => t.name)
         }),
       });
       
@@ -60,18 +66,20 @@ export default function UploadPage() {
     }
   };
 
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !artworkId) return;
 
-  const handleUploadImage = async () => {
-    if (!imageFile || !artworkId) return;
-    setIsLoading(true);
+    setImageFile(file);
+    setIsUploadingImage(true);
     setError(null);
 
     try {
       const formData = new FormData();
-      formData.append('file', imageFile);
+      formData.append('file', file);
       formData.append('artworkId', artworkId);
 
-      const isPdfFile = imageFile.type === 'application/pdf';
+      const isPdfFile = file.type === 'application/pdf';
       const endpoint = isPdfFile ? '/api/upload/pdf' : '/api/upload/image';
 
       const res = await fetch(endpoint, {
@@ -87,22 +95,25 @@ export default function UploadPage() {
       } else {
         setUploadedImageUrl(`/api/media/${data.filePath}`);
       }
-      setImageFile(null);
     } catch (err: any) {
       setError(err.message);
+      setImageFile(null);
     } finally {
-      setIsLoading(false);
+      setIsUploadingImage(false);
     }
   };
 
-  const handleUploadAudio = async () => {
-    if (!audioFile || !artworkId) return;
-    setIsLoading(true);
+  const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !artworkId) return;
+
+    setAudioFile(file);
+    setIsUploadingAudio(true);
     setError(null);
 
     try {
       const formData = new FormData();
-      formData.append('file', audioFile);
+      formData.append('file', file);
       formData.append('artworkId', artworkId);
       if (title) {
         formData.append('description', title);
@@ -117,11 +128,11 @@ export default function UploadPage() {
       if (!res.ok) throw new Error(data.error || 'Error al pujar l\'àudio');
       
       setUploadedAudio(true);
-      setAudioFile(null); // Netegem l'input
     } catch (err: any) {
       setError(err.message);
+      setAudioFile(null);
     } finally {
-      setIsLoading(false);
+      setIsUploadingAudio(false);
     }
   };
 
@@ -237,100 +248,122 @@ export default function UploadPage() {
           )}
 
           {step === 2 && (
-            <div className="space-y-8">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* Secció Imatge / PDF */}
-              <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
-                <h2 className="text-lg font-medium text-stone-800 mb-4">1. Puja una imatge o PDF</h2>
+              <div className="bg-stone-50 p-6 md:p-8 rounded-3xl border border-stone-100 shadow-sm">
+                <h2 className="text-xl font-medium text-stone-800 mb-6 flex items-center">
+                  <span className="w-8 h-8 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-sm mr-3 font-bold">1</span>
+                  Puja l'obra (Imatge o PDF)
+                </h2>
 
-                {uploadedImageUrl ? (
-                  <div className="space-y-3">
-                    <p className="text-sm text-green-600 font-medium flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                      Imatge pujada correctament
-                    </p>
-                    <img src={uploadedImageUrl} alt="Previsualització" className="w-full max-h-64 object-contain rounded-xl border border-stone-200 bg-white" />
-                  </div>
-                ) : uploadedPdfPages !== null ? (
-                  <p className="text-sm text-green-600 font-medium flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                    PDF processat correctament — {uploadedPdfPages} {uploadedPdfPages === 1 ? 'pàgina' : 'pàgines'} afegides
-                  </p>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <div className="relative flex-1">
-                        <div className="flex flex-col gap-3">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                            className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
-                          />
-                          <input
-                            type="file"
-                            accept="application/pdf"
-                            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                            className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100"
-                          />
-                        </div>
-                        {isPdf && (
-                          <span className="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2a1 1 0 00-1 1v1H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2h-4V3a1 1 0 00-1-1zm-1 5h2v2h-2V7zm0 4h2v6h-2v-6z" />
-                            </svg>
-                            PDF — es convertirà a imatges per pàgina
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        onClick={handleUploadImage}
-                        disabled={!imageFile || isLoading}
-                        className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
-                      >
-                        {isLoading ? 'Processant…' : isPdf ? 'Pujar PDF' : 'Pujar imatge'}
-                      </button>
+                <div className="flex flex-col gap-4">
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*,application/pdf"
+                    capture="environment"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={isUploadingImage || !!uploadedImageUrl || uploadedPdfPages !== null}
+                      className="px-6 py-3 bg-stone-800 hover:bg-stone-900 text-white rounded-2xl font-medium transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      Seleccionar arxiu
+                    </button>
+
+                    <div className="flex-1 text-sm">
+                      {isUploadingImage ? (
+                        <span className="text-amber-600 font-medium flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          Pujant...
+                        </span>
+                      ) : (uploadedImageUrl || uploadedPdfPages !== null) ? (
+                        <span className="text-green-600 font-semibold flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                          ✓ {imageFile?.name || 'Arxiu pujat'}
+                        </span>
+                      ) : imageFile ? (
+                        <span className="text-stone-600">{imageFile.name}</span>
+                      ) : (
+                        <span className="text-stone-400 italic">Cap arxiu seleccionat</span>
+                      )}
                     </div>
-                    <p className="text-xs text-stone-400">Formats acceptats: JPG, PNG, WEBP, PDF</p>
                   </div>
-                )}
+
+                  {uploadedImageUrl && (
+                    <div className="mt-2 animate-in zoom-in-95 duration-300">
+                      <img src={uploadedImageUrl} alt="Previsualització" className="w-full max-h-48 object-contain rounded-2xl border border-stone-200 bg-white p-1 shadow-inner" />
+                    </div>
+                  )}
+                  {uploadedPdfPages !== null && (
+                    <div className="mt-2 p-3 bg-red-50 text-red-700 rounded-xl border border-red-100 text-xs font-medium">
+                      PDF processat: {uploadedPdfPages} pàgines convertides a imatges.
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Secció Àudio */}
-              <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
-                <h2 className="text-lg font-medium text-stone-800 mb-4">2. Puja un àudio (la seva explicació)</h2>
+              <div className="bg-stone-50 p-6 md:p-8 rounded-3xl border border-stone-100 shadow-sm">
+                <h2 className="text-xl font-medium text-stone-800 mb-6 flex items-center">
+                  <span className="w-8 h-8 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-sm mr-3 font-bold">2</span>
+                  Puja l'àudio (explicació)
+                </h2>
                 
-                {uploadedAudio ? (
-                  <p className="text-sm text-green-600 font-medium flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                    Àudio pujat correctament
-                  </p>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex flex-col sm:flex-row gap-3 mt-2">
-                      <input
-                        type="file"
-                        accept="audio/*"
-                        capture="microphone"
-                        onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                        className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-[#D4752A] hover:file:bg-orange-100"
-                      />
-                      <button
-                        onClick={handleUploadAudio}
-                        disabled={!audioFile || isLoading}
-                        className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
-                      >
-                        Pujar àudio
-                      </button>
+                <div className="flex flex-col gap-4">
+                  <input
+                    ref={audioInputRef}
+                    type="file"
+                    accept="audio/*"
+                    capture="microphone"
+                    onChange={handleAudioChange}
+                    className="hidden"
+                  />
+
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => audioInputRef.current?.click()}
+                      disabled={isUploadingAudio || uploadedAudio}
+                      className="px-6 py-3 bg-[#D4752A] hover:bg-orange-700 text-white rounded-2xl font-medium transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                      </svg>
+                      Seleccionar arxiu
+                    </button>
+
+                    <div className="flex-1 text-sm">
+                      {isUploadingAudio ? (
+                        <span className="text-orange-600 font-medium flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          Pujant...
+                        </span>
+                      ) : uploadedAudio ? (
+                        <span className="text-green-600 font-semibold flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                          ✓ {audioFile?.name || 'Àudio pujat'}
+                        </span>
+                      ) : audioFile ? (
+                        <span className="text-stone-600">{audioFile.name}</span>
+                      ) : (
+                        <span className="text-stone-400 italic">Cap arxiu seleccionat</span>
+                      )}
                     </div>
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Botó final */}
               <button
                 onClick={() => router.push(`/artwork/${artworkId}`)}
-                className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-medium transition-colors shadow-sm flex justify-center items-center mt-4"
+                className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white rounded-2xl font-bold text-lg transition-all shadow-lg active:scale-[0.98] mt-8"
               >
                 Veure l'obra finalitzada
               </button>

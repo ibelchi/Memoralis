@@ -160,6 +160,9 @@ MEDIA_PATH="./media"
 - Usar `require` per carregar els binaris natius de better-sqlite3.
 - Per al build en Docker, s'ha configurat `next.config.mjs` per ignorar errors de linting i TypeScript, i s'han afegit variables d'entorn dummy al `Dockerfile` per permetre la compilació sense base de dades activa.
 - **PWA Icons:** Si les icones (ex: `icon-192.png`) són realment JPEGs, cal declarar `type: "image/jpeg"` al manifest encara que l'extensió sigui `.png`, altrament els navegadors mòbils fallaran i mostraran una icona genèrica.
+- **Prisma connectOrCreate i Tags:** No s'han d'enviar tags duplicats (ex: "Dibuix" i "dibuix") en una sola operació de creació, ja que Prisma fallarà amb un error de clau única. Cal de-duplicar i normalitzar en minúscules abans de fer la crida.
+- **Sincronització d'Autores:** Per mantenir la taula `Author` al dia, el handler de `POST /api/artworks` ha de fer un `upsert` de l'autora. Això permet que les autores apareguin a la configuració automàticament sense trencar el flux de pujada.
+- **Auto-upload UX:** Per a una experiència mòbil fluida, s'ha implementat pujada automàtica en seleccionar el fitxer (via `onChange`), eliminant botons innecessaris i mostrant estats clars ("Pujant...", "✓").
 - Si canvies alguna cosa al schema.prisma, executa `npx prisma generate`.
 
 ---
@@ -256,12 +259,11 @@ Estratègia: Vista o widget que mostra obres creades exactament 1, 2, 3... anys 
 Accessible des de la galeria principal (icona de calendari o pill destacada).
 Lògica: query filtrant per mes+dia de `artDate` ignorant l'any. Si no hi ha obres, la vista resta amagada o mostra un estat buit discret.
 
-### 5c — Revisió UX mòbil
+### 5c — Revisió UX mòbil ✅ Parcialment completada
 Objectiu: polir l'experiència en dispositius mòbils, que és l'ús majoritari real.
-Àrees a revisar:
+✅ Formulari d'upload optimitzat: auto-upload, inputs custom, estats en català i sense botons redundants.
 - Mides de botons i zones tàctils (mínim 44px)
 - Espaiats i marges en pantalles estretes
-- Formulari d'upload optimitzat per a mòbil
 - Navegació PWA (gestos, scroll, comportament del teclat virtual)
 - Lightbox tàctil (swipe entre imatges)
 - Reproductor d'àudio accessible amb una sola mà
@@ -359,6 +361,7 @@ Decisions de disseny preses i validades. Referència visual: disseny generat a G
 **Flux de pujada (`upload/page.tsx`):**
 - S'ha eliminat el camp de text per a la descripció de l'àudio. 
 - El sistema assigna automàticament el títol de l'obra com a descripció de l'àudio internament per mantenir la traçabilitat a la base de dades sense carregar la UI.
+- **Auto-upload:** La pujada de fitxers al Pas 2 és automàtica en seleccionar l'arxiu. S'amaguen els inputs natius i s'usen botons custom amb indicadors d'estat ("Pujant...", "✓").
 
 ---
 
