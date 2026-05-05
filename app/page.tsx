@@ -136,7 +136,7 @@ export default function HomePage() {
       addToast({
         id: idsArray.join(','),
         title: `${idsArray.length} ${idsArray.length === 1 ? 'obra' : 'obres'}`,
-        message: `${idsArray.length} ${idsArray.length === 1 ? 'obra' : 'obres'} eliminada${idsArray.length === 1 ? '' : 'es'}`,
+        message: `${idsArray.length} ${idsArray.length === 1 ? 'obra eliminada' : 'obres eliminades'}`,
         type: 'delete',
       });
 
@@ -332,7 +332,9 @@ export default function HomePage() {
             Deseleccionar tot
           </button>
           <div className="w-px h-6 bg-stone-700"></div>
-          <span className="font-medium">{selectedIds.size} obra(es) seleccionada(es)</span>
+          <span className="font-medium">
+            {selectedIds.size} {selectedIds.size === 1 ? 'obra seleccionada' : 'obres seleccionades'}
+          </span>
           <div className="w-px h-6 bg-stone-700"></div>
           <button
             onClick={handleBatchDelete}
