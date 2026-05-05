@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import TagInput from '@/components/TagInput';
+import ImageEditor from '@/components/ImageEditor';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function UploadPage() {
   // Estats de progrés individuals
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   const handleCreateArtwork = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,13 +73,29 @@ export default function UploadPage() {
     if (!file || !artworkId) return;
 
     setImageFile(file);
+    
+    // Si és PDF, pugem directament. Si és imatge, deixem que l'usuari decideixi si editar.
+    if (file.type === 'application/pdf') {
+      performUpload(file);
+    } else {
+      // Per a imatges, mostrem previsualització local immediatament
+      setUploadedImageUrl(URL.createObjectURL(file));
+      // Iniciem auto-upload després d'un petit retard per permetre clicar "Editar"
+      // o simplement esperem a que l'usuari faci alguna cosa? 
+      // El spec diu "l'auto-upload continua com fins ara". 
+      // Així que el cridem, però si obren l'editor cancel·larem o simplement sobreescriurem.
+      performUpload(file);
+    }
+  };
+
+  const performUpload = async (file: File) => {
     setIsUploadingImage(true);
     setError(null);
 
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('artworkId', artworkId);
+      formData.append('artworkId', artworkId as string);
 
       const isPdfFile = file.type === 'application/pdf';
       const endpoint = isPdfFile ? '/api/upload/pdf' : '/api/upload/image';
@@ -97,10 +115,17 @@ export default function UploadPage() {
       }
     } catch (err: any) {
       setError(err.message);
-      setImageFile(null);
+      // No resetejem imageFile aquí per permetre reintents o edició
     } finally {
       setIsUploadingImage(false);
     }
+  };
+
+  const handleEditorConfirm = (processedFile: File) => {
+    setImageFile(processedFile);
+    setIsEditorOpen(false);
+    setUploadedImageUrl(URL.createObjectURL(processedFile));
+    performUpload(processedFile);
   };
 
   const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -298,8 +323,20 @@ export default function UploadPage() {
                   </div>
 
                   {uploadedImageUrl && (
-                    <div className="mt-2 animate-in zoom-in-95 duration-300">
+                    <div className="mt-2 animate-in zoom-in-95 duration-300 flex flex-col gap-3">
                       <img src={uploadedImageUrl} alt="Previsualització" className="w-full max-h-48 object-contain rounded-2xl border border-stone-200 bg-white p-1 shadow-inner" />
+                      
+                      {imageFile && imageFile.type !== 'application/pdf' && (
+                        <button
+                          onClick={() => setIsEditorOpen(true)}
+                          className="flex items-center justify-center gap-2 py-2 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-sm font-medium transition-colors"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          Editar imatge
+                        </button>
+                      )}
                     </div>
                   )}
                   {uploadedPdfPages !== null && (
@@ -371,6 +408,14 @@ export default function UploadPage() {
           )}
         </div>
       </div>
+
+      {isEditorOpen && imageFile && (
+        <ImageEditor
+          file={imageFile}
+          onConfirm={handleEditorConfirm}
+          onCancel={() => setIsEditorOpen(false)}
+        />
+      )}
     </main>
   );
 }

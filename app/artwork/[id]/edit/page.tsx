@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import TagInput from "@/components/TagInput";
+import ImageEditor from "@/components/ImageEditor";
 
 export default function EditArtworkPage({
   params,
@@ -32,6 +33,7 @@ export default function EditArtworkPage({
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [editingImage, setEditingImage] = useState<{ id: string; filePath: string; file: File } | null>(null);
 
   // 1. Carregar dades inicials
   useEffect(() => {
@@ -91,12 +93,13 @@ export default function EditArtworkPage({
     }
   };
 
-  const handleUploadImage = async () => {
-    if (!imageFile) return;
+  const handleUploadImage = async (fileToUpload?: File) => {
+    const file = fileToUpload || imageFile;
+    if (!file) return;
     setIsUploadingImage(true);
     try {
       const formData = new FormData();
-      formData.append('file', imageFile);
+      formData.append('file', file);
       formData.append('artworkId', id);
 
       const res = await fetch('/api/upload/image', {
@@ -107,9 +110,46 @@ export default function EditArtworkPage({
       if (!res.ok) throw new Error(data.error || 'Error al pujar la imatge');
       
       setImages([...images, data]);
-      setImageFile(null);
+      if (!fileToUpload) setImageFile(null);
+      return data;
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleEditExistingImage = async (img: any) => {
+    try {
+      const response = await fetch(`/api/media/${img.filePath}`);
+      const blob = await response.blob();
+      const filename = img.filePath.split('/').pop() || 'image.jpg';
+      const file = new File([blob], filename, { type: 'image/jpeg' });
+      setEditingImage({ ...img, file });
+    } catch (err) {
+      console.error("Error carregant la imatge per editar", err);
+      alert("No s'ha pogut carregar la imatge per editar.");
+    }
+  };
+
+  const handleEditorConfirm = async (processedFile: File) => {
+    if (!editingImage) return;
+    
+    const oldId = editingImage.id;
+    setEditingImage(null);
+    setIsUploadingImage(true);
+
+    try {
+      // 1. Pujar la nova
+      const newData = await handleUploadImage(processedFile);
+      
+      // 2. Si la nova ha pujat bé, esborrar la vella
+      if (newData) {
+        await fetch(`/api/images/${oldId}`, { method: 'DELETE' });
+        setImages(prev => prev.filter(img => img.id !== oldId));
+      }
+    } catch (err) {
+      console.error("Error substituint imatge", err);
     } finally {
       setIsUploadingImage(false);
     }
@@ -276,14 +316,26 @@ export default function EditArtworkPage({
                 {images.map((img) => (
                   <div key={img.id} className="relative group rounded-xl overflow-hidden border border-stone-200">
                     <img src={`/api/media/${img.filePath}`} alt="Obra" className="w-full h-32 object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteImage(img.id)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                      title="Eliminar imatge"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                    </button>
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => handleEditExistingImage(img)}
+                        className="bg-amber-500 text-white p-1.5 rounded-full hover:bg-amber-600"
+                        title="Editar imatge"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteImage(img.id)}
+                        className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600"
+                        title="Eliminar imatge"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -370,6 +422,14 @@ export default function EditArtworkPage({
           </form>
         </div>
       </div>
+
+      {editingImage && (
+        <ImageEditor
+          file={editingImage.file}
+          onConfirm={handleEditorConfirm}
+          onCancel={() => setEditingImage(null)}
+        />
+      )}
     </main>
   );
 }

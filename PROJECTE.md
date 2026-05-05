@@ -38,7 +38,8 @@ memoralis/
 │   ├── artwork/[id]/edit/page.tsx    # Edició d'obra
 │   ├── upload/page.tsx               # Formulari d'upload
 │   └── api/
-│       ├── artworks/route.ts         # GET llista, POST crea
+│   ├── artworks/route.ts         # GET llista, POST crea
+│       ├── artworks/on-this-day/route.ts # GET obres d'anys anteriors (avui fa X anys)
 │       ├── artworks/[id]/route.ts    # GET, DELETE, PATCH per id
 │       ├── images/[id]/route.ts      # DELETE imatge individual (BD + disc)
 │       ├── audios/[id]/route.ts      # DELETE àudio individual (BD + disc)
@@ -56,6 +57,7 @@ memoralis/
 │   ├── AudioPlayer.tsx
 │   ├── BatchUploadGrid.tsx
 │   ├── GalleryFilters.tsx
+│   ├── ImageEditor.tsx               # Editor d'imatges (girar/retallar)
 │   ├── TagInput.tsx
 │   └── UploadForm.tsx
 ├── lib/
@@ -171,8 +173,8 @@ MEDIA_PATH="./media"
 
 | Mètode | Ruta | Descripció |
 |---|---|---|
-| GET | `/api/artworks` | Llista totes les obres (amb imatges, àudios, tags) |
 | POST | `/api/artworks` | Crea una obra nova (amb tags) |
+| GET | `/api/artworks/on-this-day` | Retorna les obres d'avui d'anys anteriors |
 | GET | `/api/artworks/[id]` | Detall d'una obra |
 | PATCH | `/api/artworks/[id]` | Actualitza una obra (tags, isFavorite, etc.) |
 | DELETE | `/api/artworks/[id]` | Elimina una obra (cascade) |
@@ -405,9 +407,9 @@ Accessible via icona de roda dentada (`Settings` de lucide-react) a la capçaler
 - **Mode Descoberta / Aleatori:** ✅ Implementat
 - **Cerca col·lapsable:** ✅ Implementat
 - **Backup ZIP:** ✅ Implementat
-- **Retallar imatges en upload o edició i girar-les 90 o 180 graus:** → Algun moment de la Fase 5
+- **Retallar imatges en upload o edició i girar-les 90 o 180 graus:** ✅ Implementat (Fase 5)
 - **Visualitzador d'àudio:** ✅ Implementat (Fase 5a)
-- **"Avui fa X anys":** → Fase 5b
+- **"Avui fa X anys":** ✅ Implementat (Fase 5b)
 - **Revisió UX mòbil:** → Fase 5c
 - **Refactor + Open Source:** → Fase 5d
 

@@ -15,6 +15,7 @@ export default function HomePage() {
   const [authors, setAuthors] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<GalleryMode>("galeria");
+  const [onThisDayArtworks, setOnThisDayArtworks] = useState<any[]>([]);
 
   // Llegir preferència de mode de localStorage al carregar
   useEffect(() => {
@@ -63,15 +64,18 @@ export default function HomePage() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [artworksRes, tagsRes] = await Promise.all([
+        const [artworksRes, tagsRes, onThisDayRes] = await Promise.all([
           fetch("/api/artworks"),
           fetch("/api/tags"),
+          fetch("/api/artworks/on-this-day"),
         ]);
         
         const allArtworks = await artworksRes.json();
         const allTags = await tagsRes.json();
+        const onThisDay = await onThisDayRes.json();
         
         setTags(Array.isArray(allTags) ? allTags : []);
+        setOnThisDayArtworks(Array.isArray(onThisDay) ? onThisDay : []);
         
         if (Array.isArray(allArtworks)) {
           const uniqueAuthors = Array.from(
@@ -166,6 +170,13 @@ export default function HomePage() {
     });
   }, [artworks, mode]);
 
+  const maxYearsAgo = useMemo(() => {
+    if (onThisDayArtworks.length === 0) return 0;
+    const currentYear = new Date().getFullYear();
+    const years = onThisDayArtworks.map(a => currentYear - new Date(a.artDate).getFullYear());
+    return Math.max(...years);
+  }, [onThisDayArtworks]);
+
   return (
     <main className="min-h-screen bg-stone-50 text-stone-800 font-sans relative pb-32">
       <div className="max-w-6xl mx-auto px-6 py-12">
@@ -184,6 +195,15 @@ export default function HomePage() {
               belchi
             </a>
           </div>
+
+          {onThisDayArtworks.length > 0 && (
+            <Link
+              href="/on-this-day"
+              className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-full text-sm font-medium hover:bg-amber-100 transition-all shadow-sm group"
+            >
+              <span>Avui fa {maxYearsAgo} {maxYearsAgo === 1 ? 'any' : 'anys'}</span>
+            </Link>
+          )}
           
           <div className="flex items-center gap-4">
             {/* Toggle de Mode */}
