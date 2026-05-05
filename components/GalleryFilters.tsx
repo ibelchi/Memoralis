@@ -92,40 +92,42 @@ export default function GalleryFilters({
           />
         </div>
 
-        {/* Botó Seleccionar/Cancel·lar */}
-        <button
-          onClick={onToggleSelectionMode}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors whitespace-nowrap ${
-            isSelectionMode
-              ? "border-stone-800 bg-stone-800 text-white"
-              : "border-stone-200 text-stone-600 bg-white hover:bg-stone-50"
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {isSelectionMode ? "Cancel·lar" : "Seleccionar"}
-        </button>
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          {/* Botó Seleccionar/Cancel·lar */}
+          <button
+            onClick={onToggleSelectionMode}
+            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors whitespace-nowrap ${
+              isSelectionMode
+                ? "border-stone-800 bg-stone-800 text-white"
+                : "border-stone-200 text-stone-600 bg-white hover:bg-stone-50"
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {isSelectionMode ? "Cancel·lar" : "Seleccionar"}
+          </button>
 
-        {/* Botó Més filtres */}
-        <button
-          onClick={() => setShowMore(!showMore)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors whitespace-nowrap ${
-            showMore || activeSecondaryFiltersCount > 0
-              ? "border-[#D4752A] text-[#D4752A] bg-orange-50"
-              : "border-stone-200 text-stone-600 bg-white hover:bg-stone-50"
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
-          </svg>
-          Més filtres
-          {activeSecondaryFiltersCount > 0 && (
-            <span className="w-5 h-5 rounded-full bg-[#D4752A] text-white flex items-center justify-center text-xs ml-1">
-              {activeSecondaryFiltersCount}
-            </span>
-          )}
-        </button>
+          {/* Botó Més filtres */}
+          <button
+            onClick={() => setShowMore(!showMore)}
+            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors whitespace-nowrap ${
+              showMore || activeSecondaryFiltersCount > 0
+                ? "border-[#D4752A] text-[#D4752A] bg-orange-50"
+                : "border-stone-200 text-stone-600 bg-white hover:bg-stone-50"
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+            </svg>
+            Més filtres
+            {activeSecondaryFiltersCount > 0 && (
+              <span className="w-5 h-5 rounded-full bg-[#D4752A] text-white flex items-center justify-center text-xs ml-1">
+                {activeSecondaryFiltersCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Filtres Secundaris */}

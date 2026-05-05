@@ -1,84 +1,127 @@
 # Memoralis
 
-**Memoralis** és una aplicació personal dissenyada per arxivar, organitzar i enriquir els records digitals de les creacions dels més petits de la casa. 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Self-Hosted](https://img.shields.io/badge/self--hosted-ready-blue)](https://github.com/ibelchi/memoralis)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)](https://www.docker.com)
 
-> [!IMPORTANT]
-> **Estat del projecte:** Actualment el software es troba en fase **MVP (Producte Mínim Viable)**. És funcional per a ús personal, però pot contenir errors o faltar-li característiques avançades.
+> *Perquè els dibuixos mereixen ser escoltats, no només mirats.*
 
-A diferència d'una galeria de fotos convencional, Memoralis se centra en l'**emoció del moment**: permet associar cada dibuix o manualitat amb un **àudio** on el mateix infant explica què ha creat, convertint una simple imatge en un record viu per al futur.
+Memoralis és una app per arxivar les creacions dels teus fills: dibuixos, manualitats, fotografies. El que la fa diferent és que cada obra pot portar una gravació de la veu del nen o nena explicant el que ha creat. Un record en dues dimensions: visual i sonora.
 
-## ✨ Característiques principals
+Creada per ús propi, ara compartida per si a algú li pot ser útil.
 
-- **Arxiu Multimèdia:** Combina fotografies d'obres amb notes de veu.
-- **Suport PDF:** Puja quaderns o llibres sencers en PDF i l'app els convertirà en una seqüència d'imatges automàticament.
-- **Timeline Organitzat:** Visualitza les creacions per data original de creació.
-- **Privacitat per Disseny:** Storage local i base de dades SQLite per a un control total de les dades.
-- **Disseny Minimalista:** Interfície neta centrada en el contingut visual, amb estats buits il·lustrats.
-- **Gestió d'Autores:** Personalitza la identitat visual de cada filla amb colors i avatars propis.
-- **Configuració Flexible:** Defineix el mode de visualització per defecte i gestiona l'arxiu des d'un sol lloc.
-- **Suport PWA:** Instal·la Memoralis al teu telèfon com una app nativa amb captura directa de càmera i micròfon.
-- **Docker Ready:** Desplega l'app fàcilment amb Docker Compose per a ús personal en NAS o servidor domèstic.
+---
 
-## 🛠️ Stack Tecnològic
+![Memoralis — Galeria principal](./public/images/screenshot.png)
+*La galeria principal amb els dos modes: Descoberta (aleatori) i Galeria (cronològic)*
 
-- **Framework:** [Next.js 14](https://nextjs.org/) (App Router & TypeScript)
-- **Base de dades:** [SQLite](https://www.sqlite.org/) via [Prisma 7](https://www.prisma.io/)
-- **Estils:** [Tailwind CSS](https://tailwindcss.com/)
-- **Storage:** Sistema de fitxers local per a una gestió senzilla i portable.
+---
 
-## 🚀 Començar
+## ✨ Funcionalitats
 
-Primer, instal·la les dependències:
+- 🖼️ Arxiva dibuixos, fotos, manualitats i PDFs (convertits automàticament a imatges)
+- 🎙️ Associa àudios a cada obra — la veu de la creadora, explicant el que ha fet
+- 👧 Perfils per autora amb avatar i color identificador
+- ⭐ Marca favorits i descobreix obres aleatòriament
+- 📅 "Avui fa X anys" — cada dia et recorda les obres creades en la mateixa data d'anys anteriors
+- ✂️ Editor d'imatges integrat: gira i retalla sense sortir de l'app
+- 🔍 Cerca per text, filtre per autora, per etiquetes i per rang de dates
+- 💾 Backup d'un sol clic: ZIP amb tota la base de dades i els fitxers
+- 📱 Instal·lable com a PWA al mòbil
 
-```bash
-npm install
-```
+---
 
-Configura el fitxer `.env` amb la ruta de la base de dades i el storage (pots usar `.env.example` com a base):
+## 🚀 Quick Start
 
-```env
-DATABASE_URL="file:./dev.db"
-MEDIA_PATH="./media"
-```
+Necessites **Docker** i **Docker Compose**.
 
-Executa les migracions de Prisma:
+### 1. Clona el repositori
 
 ```bash
-npx prisma migrate dev
+git clone https://github.com/ibelchi/memoralis.git
+cd memoralis
 ```
 
-Finalment, arrenca el servidor de desenvolupament:
+### 2. Copia i configura les variables d'entorn
 
 ```bash
-npm run dev
+cp .env.example .env
 ```
 
-Obre [http://localhost:3000](http://localhost:3000) al teu navegador per veure el resultat.
+Edita `.env` si vols canviar algun valor (per defecte tot funciona sense tocar res).
 
-### 🐳 Docker (Recomanat)
-
-Si tens Docker instal·lat, pots arrencar l'aplicació amb una sola comanda:
+### 3. Arrenca amb Docker Compose
 
 ```bash
-docker compose up -d --build
+docker compose up -d
 ```
 
-L'aplicació estarà disponible a `http://localhost:3000`. Les dades i fitxers es persistiran a la carpeta `./data`.
+### 4. Obre l'app
 
-## 🗺️ Roadmap
+```
+http://localhost:3000
+```
 
-- [x] **Gestió de multimèdia avançada:** Suport per a múltiples imatges, eliminació individual de fitxers i millores en la reproducció d'àudio (seeking).
-- [x] **Interfície de cerca i galeria:** Implementació de filtres avançats, indicadors d'àudio visuals i optimització de la visualització d'imatges sense retalls.
-- [x] **Suport PDF:** Processament automàtic de fitxers PDF per a quaderns i llibres d'art.
-- [x] **Exploració aleatòria:** Mode "Descoberta" per redescobrir records a l'atzar.
-- [x] **Gestió d'autores i configuració:** Pantalla dedicada per a la gestió d'avatars, colors i preferències de l'aplicació.
-- [x] **Exportació simplificada:** Implementada l'exportació en ZIP (DB + fitxers) des de Configuració.
-- [ ] **Personalització de la quadrícula:** Permetre configurar la quantitat de columnes i el tamany de l'espaiat a la galeria principal.
-- [x] **Dockerització:** Desplegament senzill amb Docker Compose.
-- [x] **Suport PWA:** App instal·lable amb experiència mòbil nativa.
+La base de dades es crea automàticament en el primer arrencament. Les imatges i àudios es guarden al directori `./media/` de la teva màquina.
 
+---
 
-## 📝 Llicència
+## ⚙️ Configuració
 
-Aquest projecte està sota la llicència **MIT**. Consulta el fitxer [LICENSE](LICENSE) per a més detalls.
+| Variable | Valor per defecte | Descripció |
+|---|---|---|
+| `DATABASE_URL` | `file:./dev.db` | Path a la base de dades SQLite |
+| `MEDIA_PATH` | `./media` | Directori on es guarden els fitxers pujats |
 
+**Port:** L'app corre al port `3000`. Pots canviar-lo al `docker-compose.yml` (`3000:3000` → `8080:3000`, per exemple).
+
+**Volums persistits** (no els toquis si no vols perdre dades):
+- `./dev.db` — la base de dades
+- `./media/` — totes les imatges i àudios
+
+---
+
+## 🛠 Stack tecnològic
+
+| Capa | Tecnologia |
+|---|---|
+| Framework | Next.js 14 (App Router, TypeScript) |
+| Estils | Vanilla CSS + Tailwind CSS |
+| Base de dades | SQLite via Prisma 7 |
+| Storage | Sistema de fitxers local (`/media`) |
+| Processament PDF | `pdfjs-dist` + `canvas` |
+| Desplegament | Docker Compose |
+
+---
+
+## 🗺 Roadmap
+
+### v1.1 (si sorgeix la necessitat)
+- Cerca per veu (Web Speech API)
+- Export selectiu d'una obra per compartir
+- Densitat de quadrícula configurable
+- Notes privades de context per obra
+
+### Fase 7 — Captura offline mòbil (pendent de decidir)
+Poder fotografiar i enregistrar obres des del mòbil sense necessitat que el servidor estigui engegat, i sincronitzar quan s'arribi a casa. Dues opcions sobre la taula: PWA amb mode offline o una pàgina de captura standalone instal·lable per separat.
+
+---
+
+## 🤝 Contributing
+
+Memoralis és un projecte personal obert. Si t'has auto-hostatjat i vols afegir alguna cosa, ets benvingut.
+
+No hi ha gaires regles: obre una issue explicant el que vols fer, i si té sentit per al projecte, endavant. PRs petits i enfocats, si us plau.
+
+El projecte no vol créixer en totes les direccions — la filosofia KISS és intencional.
+
+---
+
+## 📄 Llicència
+
+[MIT](./LICENSE) © 2026 ibelchi
+
+---
+
+*Made with ☕ and nostalgia by [belchi](https://ibelchi.github.io)*

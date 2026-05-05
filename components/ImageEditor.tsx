@@ -129,7 +129,7 @@ export default function ImageEditor({ file, onConfirm, onCancel }: ImageEditorPr
     ctx.strokeRect(sCrop.x, sCrop.y, sCrop.w, sCrop.h);
 
     // Draw handles
-    ctx.fillStyle = '#white';
+    ctx.fillStyle = 'white';
     const handleSize = 10;
     const handles = [
       { x: sCrop.x, y: sCrop.y, name: 'tl' },

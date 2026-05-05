@@ -21,7 +21,6 @@ export default function BatchUploadGrid() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Carregar autores úniques des de l'API
   useEffect(() => {
     const fetchAuthors = async () => {
       try {
@@ -41,7 +40,6 @@ export default function BatchUploadGrid() {
     fetchAuthors();
   }, []);
 
-  // Alliberar memòria de les URLs creades per previsualització
   useEffect(() => {
     return () => {
       items.forEach(item => URL.revokeObjectURL(item.preview));
@@ -56,7 +54,7 @@ export default function BatchUploadGrid() {
       id: Math.random().toString(36).substring(7),
       file,
       preview: URL.createObjectURL(file),
-      title: '', // Títol opcional
+      title: '',
       author: globalAuthor,
       artDate: globalDate,
       status: 'idle'
@@ -100,7 +98,6 @@ export default function BatchUploadGrid() {
       updateItem(item.id, 'status', 'uploading');
 
       try {
-        // 1. Crear l'obra (POST /api/artworks)
         const artRes = await fetch('/api/artworks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -118,7 +115,6 @@ export default function BatchUploadGrid() {
         
         const artworkId = artData.id;
 
-        // 2. Pujar l'arxiu (imatge, pdf o àudio)
         const formData = new FormData();
         formData.append('file', item.file);
         formData.append('artworkId', artworkId);
@@ -163,7 +159,6 @@ export default function BatchUploadGrid() {
 
   return (
     <div className="space-y-8">
-      {/* Controls globals */}
       <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100 flex flex-col md:flex-row gap-4 items-end">
         <div className="flex-1">
           <label className="block text-sm font-medium text-stone-700 mb-1">Afegir fitxers</label>
@@ -217,7 +212,6 @@ export default function BatchUploadGrid() {
         </button>
       </div>
 
-      {/* Graella d'imatges */}
       {items.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map(item => (
@@ -253,7 +247,6 @@ export default function BatchUploadGrid() {
                   <span className="text-stone-400 font-medium text-sm">Fitxer desconegut</span>
                 )}
                 
-                {/* Overlays d'estat */}
                 {item.status === 'uploading' && (
                   <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
                     <svg className="animate-spin h-8 w-8 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -322,7 +315,6 @@ export default function BatchUploadGrid() {
         </div>
       )}
 
-      {/* Botons finals */}
       {items.length > 0 && (
         <div className="flex justify-between items-center pt-6 border-t border-stone-200">
           <button

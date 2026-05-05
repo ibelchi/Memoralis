@@ -6,9 +6,10 @@ interface AuthorAvatarProps {
   name: string;
   size?: string;
   className?: string;
+  avatarPath?: string | null;
 }
 
-export default function AuthorAvatar({ name, size = "w-8 h-8", className = "" }: AuthorAvatarProps) {
+export default function AuthorAvatar({ name, size = "w-8 h-8", className = "", avatarPath }: AuthorAvatarProps) {
   const [error, setError] = useState(false);
 
   // Generar slug: minúscules, sense accents, sense espais
@@ -18,7 +19,7 @@ export default function AuthorAvatar({ name, size = "w-8 h-8", className = "" }:
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, "");
 
-  const imageUrl = `/avatars/${authorSlug}.jpg`;
+  const imageUrl = avatarPath || `/avatars/${authorSlug}.jpg`;
 
   // Lògica de colors de fons (fallback)
   const getAuthorColor = (name: string) => {

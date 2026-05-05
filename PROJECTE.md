@@ -90,18 +90,19 @@ memoralis/
 
 ```prisma
 model Artwork {
-  id          String   @id @default(cuid())
-  title       String?       # Opcional (si no hi ha títol, es mostra net)
-  description String?
-  author      String        # Nom de la filla autora
-  artDate     DateTime      # Quan es va crear l'obra (no quan s'arxiva)
-  sourcePdf   String?       # Path al PDF original si l'obra en prové
-  isFavorite  Boolean  @default(false)   # Marcat com a favorit
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  images      Image[]
-  audios      Audio[]
-  tags        Tag[]
+  id               String   @id @default(cuid())
+  title            String?       # Opcional (si no hi ha títol, es mostra net)
+  description      String?
+  author           String        # Nom de la filla autora
+  authorAvatarPath String?       # Avatar de l'autora en el moment de creació
+  artDate          DateTime      # Quan es va crear l'obra (no quan s'arxiva)
+  sourcePdf        String?       # Path al PDF original si l'obra en prové
+  isFavorite       Boolean  @default(false)   # Marcat com a favorit
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  images           Image[]
+  audios           Audio[]
+  tags             Tag[]
 }
 
 model Image {
@@ -199,90 +200,115 @@ MEDIA_PATH="./media"
 
 S'han creat scripts per a la gestió i neteja del sistema de fitxers, accessibles via `npx tsx`:
 
-- **Diagnòstic d'orfes:** `npx tsx --env-file=.env scripts/find-orphan-files.ts`
-  Identifica fitxers a `/media` que no tenen registre a la BD.
-- **Neteja d'orfes:** `npx tsx --env-file=.env scripts/clean-orphan-files.ts`
-  Esborra els fitxers orfes amb confirmació prèvia.
-
-A més, els handlers de `DELETE` de l'API estan configurats per esborrar automàticament el fitxer físic del disc un cop eliminat el registre de la base de dades.
-
----
-
-## Fases del projecte
-
-**Fase 1 — Arquitectura** ✅ Completada
-Stack, model de dades, estructura de carpetes, configuració de Prisma i SQLite.
-
-**Fase 2 — MVP** ✅ Completada
-Upload d'imatges i àudios, galeria bàsica, pàgina de detall, organització per data.
-
-**Fase 3 — Millores funcionals** ✅ Completada
-✅ UX millorada (Galeria i Detall completades)
-✅ Gestió de multimèdia (esborrar fitxers individuals, suport multi-imatge)
-✅ Càrrega massiva d'obres (Batch Upload) amb selector d'autora dinàmic
-✅ Suport per a fitxers PDF (conversió automàtica a imatges) i Àudio
-✅ UX emocional: estats buits, avatars d'autora i lightbox de detall
-✅ Gestió massiva: Mode selecció múltiple i esborrat seqüencial
-✅ **Configuració i Autores:** Gestió d'autores, avatars, colors i preferències de galeria persistents.
-✅ **Backup i portabilitat:** Implementada exportació funcional en format ZIP (DB + Media).
-
-**Fase 4 — Infraestructura** ✅ Completada
-
-### 4a — Dockerització ✅ Completada
-Objectiu: empaquetar l'app amb Docker Compose per poder-la executar de forma consistent en qualsevol màquina (ordinador de casa, NAS, servidor).
-Components: Dockerfile per a Next.js 14, docker-compose.yml amb volums persistents per a `dev.db` i `/media`.
-
-### 4b — Accés mòbil (PWA) ✅ Completada
-Objectiu: accedir a Memoralis des del telèfon com si fos una app nativa, sense passar per cap App Store.
-Estratègia: Progressive Web App (PWA) amb `manifest.json`, Service Worker (Network-first amb cache d'icones i manifest) i components de registre client.
-Experiència: instal·lable a iOS/Android, captura directa de càmera i micròfon.
-Configuració crítica: les icones han d'estar declarades amb el MIME type real al `manifest.json` (especialment si són JPEGs amb extensió `.png`) per evitar que els navegadors mòbils mostrin icones genèriques de fallback.
-
-### 4c — Backup i portabilitat
-Estratègia: l'app es basa en dos components a preservar:
-- `dev.db` (fitxer SQLite): tota la informació estructurada
-- `/media` (carpeta): tots els fitxers multimèdia
-
-Backup automàtic: afegir la carpeta del projecte al software de backup existent (Time Machine, Arq, etc.). Com que dev.db és un fitxer que canvia, es detecta automàticament.
-
-Backup manual: botó "Exportar còpia" a l'app (fase futura) que genera un .zip amb dev.db + /media. Per restaurar: instal·lar Memoralis, substituir dev.db i /media pel contingut del .zip.
-
 **Fase 5 — Tancament funcional** 🔄 En curs
 
-### 5a — Visualitzador d'àudio
+### 5a — Visualitzador d'àudio ✅ Completada
 Objectiu: tancament estètic de la pàgina de detall.
-Estratègia: Web Audio API + canvas. Animació d'espectre de freqüències o ones sota el reproductor d'àudio. Color accent taronja al 40% d'opacitat.
-Activable/desactivable amb botó discret. Preferència persistida a localStorage amb clau `memoralis-audio-visualizer`.
-Implementar com a última capa estètica, un cop la resta de la pantalla de detall estigui consolidada.
+Estratègia: Web Audio API + canvas. Animació d'espectre de freqüències 
+o ones sota el reproductor d'àudio. Color accent taronja al 40% d'opacitat.
+Activable/desactivable amb botó discret al costat del reproductor.
+Preferència persistida a localStorage amb clau `memoralis-audio-visualizer`.
+Desactivat per defecte — l'usuari l'activa manualment.
 
-### 5b — "Avui fa X anys"
+### 5b — "Avui fa X anys" ✅ Completada
 Objectiu: afegir una dimensió emocional i temporal a l'app.
-Estratègia: Vista o widget que mostra obres creades exactament 1, 2, 3... anys enrere respecte al dia actual, basant-se en el camp `artDate`.
-Accessible des de la galeria principal (icona de calendari o pill destacada).
-Lògica: query filtrant per mes+dia de `artDate` ignorant l'any. Si no hi ha obres, la vista resta amagada o mostra un estat buit discret.
+Estratègia: Vista o widget que mostra obres creades exactament 1, 2, 3... 
+anys enrere respecte al dia actual, basant-se en el camp `artDate`.
+Accessible des de la galeria principal (pill amb color accent taronja).
+Lògica: query filtrant per mes+dia de `artDate` ignorant l'any amb 
+`strftime('%m-%d', artDate)`. Si no hi ha obres, la pill resta amagada.
+Nova ruta: `app/on-this-day/page.tsx` i `app/api/artworks/on-this-day/route.ts`.
 
-### 5c — Revisió UX mòbil ✅ Parcialment completada
-Objectiu: polir l'experiència en dispositius mòbils, que és l'ús majoritari real.
-✅ Formulari d'upload optimitzat: auto-upload, inputs custom, estats en català i sense botons redundants.
-- Mides de botons i zones tàctils (mínim 44px)
-- Espaiats i marges en pantalles estretes
-- Navegació PWA (gestos, scroll, comportament del teclat virtual)
-- Lightbox tàctil (swipe entre imatges)
-- Reproductor d'àudio accessible amb una sola mà
+### 5c — Retallar i girar imatges ✅ Completada
+Objectiu: poder editar imatges directament dins l'app sense eines externes.
+Estratègia: component `ImageEditor.tsx` basat en canvas API natiu, 
+sense dependències externes. Disponible a l'upload i a l'edició d'obres.
+Funcionalitats: girar 90° esquerra/dreta i retallar amb handles arrossegables.
+Funciona amb mouse (escriptori) i touch (Android/Chrome).
+Ordre d'aplicació: primer gir, després retall. Output: JPEG qualitat 0.92.
 
-### 5d — Refactor i preparació Open Source
+### 5d — Revisió UX mòbil ✅ Completada
+Objectiu: polir l'experiència en dispositius mòbils.
+Canvis aplicats:
+- "Afegir obra" → "Afegir" (mòbil i escriptori)
+- Ordre capçalera: [Descoberta/Galeria] → [Afegir] → [⚙️]
+- Botons "Seleccionar" i "Més filtres" sempre en fila horitzontal
+- Botons "Editar" i "Paperera" a la barra superior, alineats amb 
+  la targeta de contingut
+- Ordre elements detall: Imatge → metadades → etiquetes → àudio → descripció
+- Línia de metadades compacta: [★] [avatar] "Obra de X" [data]
+
+### 5e — Avatar històric per obra ✅ Completada
+Objectiu: preservar l'avatar de l'autora en el moment de creació de 
+cada obra, de manera que els records mantinguin el seu context visual 
+original quan l'avatar canviï en el futur.
+Estratègia: camp `authorAvatarPath` (String?) afegit a la taula `Artwork`.
+En crear una obra, es copia l'avatar actual de l'autora al camp.
+Fallback: si `null`, es mostra l'avatar actual de l'autora (cobreix 
+obres anteriors a la implementació).
+Edició retroactiva d'avatars per obra: possible via la pàgina d'edició, 
+pendent d'implementar si sorgeix la necessitat (v1.1).
+
+### 5f — Refactor + Open Source ⏳ Pendent
 Objectiu: que el codi sigui llegible i contribuïble per tercers.
 Tasques:
 - Extreure components pendents (ex: UploadForm en subcomponents)
 - Netejar codi mort i comentaris de desenvolupament
 - Afegir llicència MIT (`LICENSE`)
-- Escriure `README.md` públic: què és, captures, instal·lació Docker, configuració, contribució
+- Escriure `README.md` públic: què és, captures, instal·lació Docker, 
+  configuració, contribució
 - Revisar i consolidar `.gitignore`
 - Versió 1.0.0 al `package.json`
 
 **Fase 6 — Open Source Launch** ⏳ Pendent
 Publicació del repositori a GitHub amb documentació completa.
 Etiquetes: `self-hosted`, `family`, `memories`, `nextjs`, `sqlite`, `docker`.
+
+**Fase 7 — Captura offline mòbil** ⏳ Pendent
+
+Objectiu: poder registrar obres (foto, àudio, metadades) des del 
+telèfon mòbil sense necessitat que el servidor estigui engegat. 
+Quan l'usuari arriba a casa, obre Memoralis i prem "Sincronitzar" 
+per pujar tot el que ha capturat.
+
+Nota: dissenyat per a Android + Chrome. iOS no és un requisit.
+
+### Opció A — PWA actual amb mode offline
+Adaptar la PWA existent perquè funcioni sense servidor:
+- Service Worker robust per fer l'app carregable offline.
+- Formulari d'upload guarda a IndexedDB quan no hi ha servidor.
+- Badge de "N obres pendents" visible a la galeria.
+- Botó "Sincronitzar" que envia les obres en cua quan el 
+  servidor és accessible.
+- Possibilitat de Background Sync automàtic (Android/Chrome).
+- Complexitat: mitjana. Risc: tocar el cor de l'app actual.
+
+### Opció B — Pàgina de captura standalone (/capture)
+Una pàgina estàtica servida des del mateix Docker de Memoralis, 
+instal·lable com a PWA independent al telèfon:
+- Funciona 100% offline sempre (fitxers estàtics, sense Next.js).
+- Formulari simple: foto, àudio, títol, autora, tags.
+- Dades guardades a IndexedDB del telèfon.
+- Botó "Sincronitzar" que fa POST a Memoralis quan hi ha connexió.
+- L'usuari té dues icones al mòbil: Memoralis i Memoralis Capture.
+- Complexitat: baixa. Sense risc per a l'app actual.
+
+### Decisió pendent
+Ambdues opcions són viables. L'Opció B és més KISS i sense risc. 
+L'Opció A és més integrada. Decidir quan s'arribi a aquesta fase.
+ra standalone (/capture)
+Una pàgina estàtica servida des del mateix Docker de Memoralis, 
+instal·lable com a PWA independent al telèfon:
+- Funciona 100% offline sempre (fitxers estàtics, sense Next.js).
+- Formulari simple: foto, àudio, títol, autora, tags.
+- Dades guardades a IndexedDB del telèfon.
+- Botó "Sincronitzar" que fa POST a Memoralis quan hi ha connexió.
+- L'usuari té dues icones al mòbil: Memoralis i Memoralis Capture.
+- Complexitat: baixa. Sense risc per a l'app actual.
+
+### Decisió pendent
+Ambdues opcions són viables. L'Opció B és més KISS i sense risc. 
+L'Opció A és més integrada. Decidir quan s'arribi a aquesta fase.
 
 ---
 
@@ -402,27 +428,31 @@ Accessible via icona de roda dentada (`Settings` de lucide-react) a la capçaler
 
 ## Millores i idees futures
 
-### Implementades o en curs
+### Implementades
 - **Favorits:** ✅ Implementat
 - **Mode Descoberta / Aleatori:** ✅ Implementat
 - **Cerca col·lapsable:** ✅ Implementat
 - **Backup ZIP:** ✅ Implementat
-- **Retallar imatges en upload o edició i girar-les 90 o 180 graus:** ✅ Implementat (Fase 5)
+- **Retallar imatges i girar-les:** ✅ Implementat (Fase 5c)
 - **Visualitzador d'àudio:** ✅ Implementat (Fase 5a)
 - **"Avui fa X anys":** ✅ Implementat (Fase 5b)
-- **Revisió UX mòbil:** → Fase 5c
-- **Refactor + Open Source:** → Fase 5d
+- **Revisió UX mòbil:** ✅ Implementat (Fase 5d)
+- **Avatar històric per obra:** ✅ Implementat (Fase 5e)
+- **Refactor + Open Source:** → Fase 5f
 
 ### Descartades (amb justificació)
-- **Slideshow:** Descartada. Trenca la filosofia de contemplació pausada de l'app. Memoralis és per viure una obra a la vegada.
+- **Slideshow:** Descartada. Trenca la filosofia de contemplació pausada 
+  de l'app. Memoralis és per viure una obra a la vegada.
 - **Mode fosc:** No s'implementa al MVP. Base CSS preparada per si cal.
-- **Carpetes/Col·leccions:** Descartada. Tags + filtre autora + dates cobreixen la necessitat.
+- **Carpetes/Col·leccions:** Descartada. Tags + filtre autora + dates 
+  cobreixen la necessitat.
 
 ### Futures (v1.1 si sorgeix la necessitat)
-- **Cerca per veu:** Web Speech API integrada al camp de cerca. Útil en ús mòbil amb mans ocupades.
+- **Cerca per veu:** Web Speech API integrada al camp de cerca.
 - **Export selectiu:** ZIP d'una obra concreta per compartir amb avis.
-- **Notes privades de context:** Donar més protagonisme al camp `description` (ex: "ho va fer mentre estava malalta").
-- **"Avui fa X anys" widget a la galeria:** Extensió de 5b com a widget persistent a la galeria principal.
+- **Notes privades de context:** Més protagonisme al camp `description`.
+- **Avatar històric — edició retroactiva:** Canviar l'avatar associat 
+  a obres concretes des de la pàgina d'edició.
 - **Densitat de quadrícula configurable:** Slider per canviar columnes.
 
 ---
@@ -447,5 +477,6 @@ Text: "belchi" · Mida: text-xs · Color: neutre/gris · Enllaç: https://ibelch
 | Versió | Estat | Contingut |
 |---|---|---|
 | 0.1 — 0.4 | ✅ Completada | Fases 1–4: Arquitectura, MVP, Millores, Infra |
-| 1.0 | 🔄 En curs | Fase 5: Visualitzador, Avui fa X anys, UX mòbil, Refactor |
+| 1.0 | 🔄 En curs | Fase 5: Visualitzador, Avui fa X anys, Retallar/girar, UX mòbil, Avatar històric, Refactor |
 | 1.0 launch | ⏳ Pendent | Fase 6: Publicació Open Source |
+| 1.1 | ⏳ Pendent | Fase 7: Captura offline mòbil |

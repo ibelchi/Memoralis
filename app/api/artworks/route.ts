@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 
     // Task 3: Ensure author exists (validation/consistency)
     // We check if the author exists, if not we create it to keep the Author table in sync
-    await prisma.author.upsert({
+    const authorData = await prisma.author.upsert({
       where: { name: author },
       update: {},
       create: { name: author }
@@ -94,6 +94,7 @@ export async function POST(request: Request) {
         description: description || null,
         author,
         artDate: parsedDate,
+        authorAvatarPath: authorData.avatarPath,
         tags: {
           connectOrCreate: normalizedTags.map((name) => ({
             where: { name },

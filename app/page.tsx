@@ -17,7 +17,6 @@ export default function HomePage() {
   const [mode, setMode] = useState<GalleryMode>("galeria");
   const [onThisDayArtworks, setOnThisDayArtworks] = useState<any[]>([]);
 
-  // Llegir preferència de mode de localStorage al carregar
   useEffect(() => {
     const savedMode = localStorage.getItem("memoralis-default-mode");
     if (savedMode === "descoberta" || savedMode === "galeria") {
@@ -25,7 +24,6 @@ export default function HomePage() {
     }
   }, []);
 
-  // Estats per a la selecció
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -60,7 +58,6 @@ export default function HomePage() {
     }
   }, [filters]);
 
-  // 1. Càrrega inicial d'autores i tags
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -91,7 +88,6 @@ export default function HomePage() {
     fetchInitialData();
   }, []);
 
-  // 2. Fetch d'obres quan canvien els filtres (amb debounce)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       fetchFilteredArtworks();
@@ -99,7 +95,6 @@ export default function HomePage() {
     return () => clearTimeout(timeoutId);
   }, [fetchFilteredArtworks]);
 
-  // 3. Listener per a actualitzacions externes (deletions/restores)
   useEffect(() => {
     const handleUpdate = () => fetchFilteredArtworks();
     window.addEventListener('artworks-updated', handleUpdate);
@@ -145,7 +140,6 @@ export default function HomePage() {
         type: 'delete',
       });
 
-      // Refresquem
       await fetchFilteredArtworks();
       setIsSelectionMode(false);
       setSelectedIds(new Set());
@@ -156,7 +150,6 @@ export default function HomePage() {
     }
   };
 
-  // 3. Càlcul de les obres a mostrar depenent del mode
   const displayedArtworks = useMemo(() => {
     const list = Array.isArray(artworks) ? artworks : [];
     if (mode === "galeria") {
@@ -180,7 +173,6 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-stone-50 text-stone-800 font-sans relative pb-32">
       <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Capçalera */}
         <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
           <div className="flex-1">
             <h1 className="text-4xl font-serif font-light text-stone-900 tracking-tight">
@@ -206,7 +198,6 @@ export default function HomePage() {
           )}
           
           <div className="flex items-center gap-4">
-            {/* Toggle de Mode */}
             <div className="flex bg-stone-200/60 p-1 rounded-full">
               <button
                 onClick={() => setMode("descoberta")}
@@ -229,17 +220,7 @@ export default function HomePage() {
                 Galeria
               </button>
             </div>
-            
-            {/* Botó de configuració */}
-            <Link 
-              href="/settings"
-              className="text-stone-400 hover:text-[#D4752A] transition-colors p-1"
-              aria-label="Configuració"
-            >
-              <Settings size={20} />
-            </Link>
 
-            {/* Botó d'afegir obra */}
             <Link
               href="/upload"
               className="inline-flex items-center justify-center px-5 py-2.5 bg-[#D4752A] hover:bg-orange-700 text-white rounded-full font-medium transition-colors shadow-sm hover:shadow-md"
@@ -254,12 +235,19 @@ export default function HomePage() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-              Afegir obra
+              Afegir
+            </Link>
+            
+            <Link 
+              href="/settings"
+              className="text-stone-400 hover:text-[#D4752A] transition-colors p-1"
+              aria-label="Configuració"
+            >
+              <Settings size={20} />
             </Link>
           </div>
         </header>
 
-        {/* Filtres */}
         <div className="mb-8">
           <GalleryFilters 
             authors={authors} 
@@ -270,7 +258,6 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Estat de càrrega o resultats */}
         {loading ? (
           <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-stone-100">
             <svg className="animate-spin h-10 w-10 text-[#D4752A] mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -281,16 +268,13 @@ export default function HomePage() {
           </div>
         ) : displayedArtworks.length === 0 ? (
           <div className="relative overflow-hidden rounded-3xl shadow-sm border border-stone-100 min-h-[420px] flex items-center justify-center">
-            {/* Imatge de fons */}
             <img
               src="/images/empty-state.png"
               alt=""
               aria-hidden="true"
               className="absolute inset-0 w-full h-full object-cover"
             />
-            {/* Overlay blanc per suavitzar */}
             <div className="absolute inset-0 bg-white/60" />
-            {/* Contingut centrat */}
             <div className="relative z-10 text-center px-8 py-16">
               <h3 className="text-2xl font-serif font-light text-stone-700 mb-3">
                 {Object.values(filters).some(Boolean)
@@ -332,13 +316,13 @@ export default function HomePage() {
                 isSelectionMode={isSelectionMode}
                 isSelected={selectedIds.has(artwork.id)}
                 onToggleSelect={handleToggleSelect}
+                authorAvatarPath={artwork.authorAvatarPath}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Floating Action Bar */}
       {isSelectionMode && selectedIds.size > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-stone-900 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <button

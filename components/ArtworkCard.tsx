@@ -25,6 +25,7 @@ interface ArtworkCardProps {
   isSelectionMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
+  authorAvatarPath?: string | null;
 }
 
 export default function ArtworkCard({
@@ -39,6 +40,7 @@ export default function ArtworkCard({
   isSelectionMode = false,
   isSelected = false,
   onToggleSelect,
+  authorAvatarPath,
 }: ArtworkCardProps) {
   const router = useRouter();
   const [favorite, setFavorite] = useState(isFavorite);
@@ -192,7 +194,7 @@ export default function ArtworkCard({
             <div className="mt-auto">
               <div className="pt-4 flex items-center justify-between text-sm text-stone-500 font-medium border-t border-stone-50 mb-3">
                 <div className="flex items-center gap-2">
-                  <AuthorAvatar name={author} size="w-8 h-8" />
+                  <AuthorAvatar name={author} size="w-8 h-8" avatarPath={authorAvatarPath} />
                   {author}
                 </div>
                 <time dateTime={dateObj.toISOString()}>{displayDate}</time>

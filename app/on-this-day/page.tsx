@@ -115,6 +115,7 @@ export default function OnThisDayPage() {
                       hasAudio={artwork.audios && artwork.audios.length > 0}
                       tags={artwork.tags || []}
                       isFavorite={artwork.isFavorite}
+                      authorAvatarPath={artwork.authorAvatarPath}
                     />
                   ))}
                 </div>
