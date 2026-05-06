@@ -1,13 +1,13 @@
-# Memoralis
+## Memoralis
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Self-Hosted](https://img.shields.io/badge/self--hosted-ready-blue)](https://github.com/ibelchi/memoralis)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)](https://www.docker.com)
 
-> *Perquè els dibuixos mereixen ser escoltats, no només mirats.*
+> *Les obres dels infants mereixen ser escoltades, no només mirades.*
 
-Memoralis és una app per arxivar les creacions dels teus fills: dibuixos, manualitats, fotografies. El que la fa diferent és que cada obra pot portar una gravació de la veu del nen o nena explicant el que ha creat. Un record en dues dimensions: visual i sonora.
+Memoralis és una app per arxivar les creacions dels infants de la teva familia: dibuixos, manualitats, fotografies... El que la fa diferent és que cada obra pot portar una gravació de la veu del nen o nena explicant el que ha creat. Un record en dues dimensions: visual i sonora.
 
 Creada per ús propi, ara compartida per si a algú li pot ser útil.
 
