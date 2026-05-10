@@ -310,54 +310,56 @@ export default function ImageEditor({ file, onConfirm, onCancel }: ImageEditorPr
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center animate-in fade-in duration-300 touch-none">
-      <div 
-        ref={containerRef}
-        className="relative flex-1 w-full flex items-center justify-center p-4 overflow-hidden"
-        onMouseMove={isDragging ? (e) => doDragging(e) : undefined}
-        onMouseUp={stopDragging}
-        onTouchMove={isDragging ? (e) => doDragging(e) : undefined}
-        onTouchEnd={stopDragging}
-      >
-        <canvas
-          ref={canvasRef}
-          className="shadow-2xl cursor-crosshair touch-none"
-          onMouseDown={startDragging}
-          onTouchStart={startDragging}
-        />
-      </div>
-
-      <div className="w-full bg-stone-900/80 backdrop-blur-md p-6 flex flex-col gap-6 items-center border-t border-stone-800">
-        <div className="flex gap-4">
-          <button
-            onClick={() => handleRotate(-90)}
-            className="flex items-center justify-center w-12 h-12 bg-stone-800 hover:bg-stone-700 text-white rounded-full transition-colors border border-stone-700"
-            title="Girar 90° esquerra"
-          >
-            ↺
-          </button>
-          <button
-            onClick={() => handleRotate(90)}
-            className="flex items-center justify-center w-12 h-12 bg-stone-800 hover:bg-stone-700 text-white rounded-full transition-colors border border-stone-700"
-            title="Girar 90° dreta"
-          >
-            ↻
-          </button>
+    <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="w-full max-w-4xl bg-stone-900 rounded-3xl flex flex-col max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div 
+          ref={containerRef}
+          className="relative flex-1 w-full flex items-center justify-center p-4 min-h-[300px]"
+          onMouseMove={isDragging ? (e) => doDragging(e) : undefined}
+          onMouseUp={stopDragging}
+          onTouchMove={isDragging ? (e) => doDragging(e) : undefined}
+          onTouchEnd={stopDragging}
+        >
+          <canvas
+            ref={canvasRef}
+            className="shadow-2xl cursor-crosshair touch-none"
+            onMouseDown={startDragging}
+            onTouchStart={startDragging}
+          />
         </div>
 
-        <div className="flex gap-4 w-full max-w-sm">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-3 px-6 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-2xl font-medium transition-colors"
-          >
-            Cancel·lar
-          </button>
-          <button
-            onClick={handleApply}
-            className="flex-1 py-3 px-6 bg-[#D4752A] hover:bg-orange-700 text-white rounded-2xl font-bold transition-all shadow-lg active:scale-[0.98]"
-          >
-            Aplicar
-          </button>
+        <div className="w-full bg-stone-900/80 backdrop-blur-md p-6 flex flex-col gap-6 items-center border-t border-stone-800">
+          <div className="flex gap-4">
+            <button
+              onClick={() => handleRotate(-90)}
+              className="flex items-center justify-center w-12 h-12 bg-stone-800 hover:bg-stone-700 text-white rounded-full transition-colors border border-stone-700"
+              title="Girar 90° esquerra"
+            >
+              ↺
+            </button>
+            <button
+              onClick={() => handleRotate(90)}
+              className="flex items-center justify-center w-12 h-12 bg-stone-800 hover:bg-stone-700 text-white rounded-full transition-colors border border-stone-700"
+              title="Girar 90° dreta"
+            >
+              ↻
+            </button>
+          </div>
+
+          <div className="flex gap-4 w-full max-w-sm">
+            <button
+              onClick={onCancel}
+              className="flex-1 py-3 px-6 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-2xl font-medium transition-colors"
+            >
+              Cancel·lar
+            </button>
+            <button
+              onClick={handleApply}
+              className="flex-1 py-3 px-6 bg-[#D4752A] hover:bg-orange-700 text-white rounded-2xl font-bold transition-all shadow-lg active:scale-[0.98]"
+            >
+              Aplicar
+            </button>
+          </div>
         </div>
       </div>
     </div>

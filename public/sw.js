@@ -1,4 +1,4 @@
-const CACHE_NAME = 'memoralis-v4';
+const CACHE_NAME = 'memoralis-v5';
 const PRECACHE_URLS = [
   '/', 
   '/upload',

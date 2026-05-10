@@ -237,7 +237,7 @@ export default function MediaUploadStep({ artworkId, artworkTitle, onComplete }:
           <input
             ref={audioInputRef}
             type="file"
-            accept="audio/*"
+            accept="audio/*,video/mp4,.m4a,.amr,.ogg,.opus,.3gpp,.mp3,.wav"
             capture="microphone"
             onChange={handleAudioChange}
             className="hidden"

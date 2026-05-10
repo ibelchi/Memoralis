@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import TagInput from "@/components/TagInput";
@@ -34,6 +34,23 @@ export default function EditArtworkPage({
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   const [editingImage, setEditingImage] = useState<{ id: string; filePath: string; file: File } | null>(null);
+  
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    handleUploadImage(file);
+  };
+
+  const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAudioFile(file);
+    handleUploadAudio(file);
+  };
 
   // 1. Carregar dades inicials
   useEffect(() => {
@@ -155,8 +172,9 @@ export default function EditArtworkPage({
     }
   };
 
-  const handleUploadAudio = async () => {
-    if (!audioFile) return;
+  const handleUploadAudio = async (fileToUpload?: File) => {
+    const file = fileToUpload || audioFile;
+    if (!file) return;
     setIsUploadingAudio(true);
     try {
       const formData = new FormData();
@@ -344,17 +362,36 @@ export default function EditArtworkPage({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                  className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                  ref={imageInputRef}
+                  onChange={handleImageChange}
+                  className="hidden"
                 />
-                <button
-                  type="button"
-                  onClick={handleUploadImage}
-                  disabled={!imageFile || isUploadingImage}
-                  className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
-                >
-                  {isUploadingImage ? 'Pujant...' : 'Afegir imatge'}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 items-center">
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isUploadingImage}
+                    className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Seleccionar imatge
+                  </button>
+                  <div className="text-sm">
+                    {isUploadingImage ? (
+                      <span className="text-amber-600 font-medium flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Pujant...
+                      </span>
+                    ) : imageFile ? (
+                      <span className="text-green-600 font-semibold flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                        ✓ {imageFile.name}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -386,18 +423,37 @@ export default function EditArtworkPage({
               <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="file"
-                  accept="audio/*"
-                  onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                  className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-[#D4752A] hover:file:bg-orange-100"
+                  accept="audio/*,video/mp4,.m4a,.amr,.ogg,.opus,.3gpp,.mp3,.wav"
+                  ref={audioInputRef}
+                  onChange={handleAudioChange}
+                  className="hidden"
                 />
-                <button
-                  type="button"
-                  onClick={handleUploadAudio}
-                  disabled={!audioFile || isUploadingAudio}
-                  className="px-6 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
-                >
-                  {isUploadingAudio ? 'Pujant...' : 'Afegir àudio'}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 items-center">
+                  <button
+                    type="button"
+                    onClick={() => audioInputRef.current?.click()}
+                    disabled={isUploadingAudio}
+                    className="px-6 py-2 bg-[#D4752A] hover:bg-orange-700 text-white rounded-full font-medium transition-colors disabled:opacity-50 whitespace-nowrap flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                    Seleccionar àudio
+                  </button>
+                  <div className="text-sm flex items-center">
+                    {isUploadingAudio ? (
+                      <span className="text-orange-600 font-medium flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Pujant...
+                      </span>
+                    ) : audioFile ? (
+                      <span className="text-green-600 font-semibold flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                        ✓ {audioFile.name}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             </div>
 

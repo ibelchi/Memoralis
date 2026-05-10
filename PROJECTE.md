@@ -165,7 +165,9 @@ MEDIA_PATH="./media"
 - **PWA Icons:** Si les icones (ex: `icon-192.png`) són realment JPEGs, cal declarar `type: "image/jpeg"` al manifest encara que l'extensió sigui `.png`, altrament els navegadors mòbils fallaran i mostraran una icona genèrica.
 - **Prisma connectOrCreate i Tags:** No s'han d'enviar tags duplicats (ex: "Dibuix" i "dibuix") en una sola operació de creació, ja que Prisma fallarà amb un error de clau única. Cal de-duplicar i normalitzar en minúscules abans de fer la crida.
 - **Sincronització d'Autores:** Per mantenir la taula `Author` al dia, el handler de `POST /api/artworks` ha de fer un `upsert` de l'autora. Això permet que les autores apareguin a la configuració automàticament sense trencar el flux de pujada.
-- **Auto-upload UX:** Per a una experiència mòbil fluida, s'ha implementat pujada automàtica en seleccionar el fitxer (via `onChange`), eliminant botons innecessaris i mostrant estats clars ("Pujant...", "✓").
+- **Auto-upload UX:** Per a una experiència mòbil fluida, s'ha implementat pujada automàtica en seleccionar el fitxer (via `onChange`) tant a la pàgina d'upload com a la d'edició, eliminant botons innecessaris i mostrant estats clars ("Pujant...", "✓").
+- **SQLite i Docker Volumes:** SQLite necessita permisos d'escriptura al directori on resideix la base de dades per crear fitxers de journal. Si es munta el fitxer `.db` directament en un volum sobre una carpeta de root (com `/app`), fallarà amb `attempt to write a readonly database`. La solució és muntar-lo en una subcarpeta dedicada (ex: `/app/data/memoralis.db`) que sigui propietat de l'usuari que corre l'app (`nextjs`).
+- **Compatibilitat d'àudio a Android:** S'ha ampliat l'atribut `accept` dels inputs d'àudio per incloure formats típics de gravadores Android (`audio/*,video/mp4,.m4a,.amr,.ogg,.opus,.3gpp,.mp3,.wav`), ja que altrament el file picker no els mostrava.
 - Si canvies alguna cosa al schema.prisma, executa `npx prisma generate`.
 
 ---
@@ -226,6 +228,7 @@ sense dependències externes. Disponible a l'upload i a l'edició d'obres.
 Funcionalitats: girar 90° esquerra/dreta i retallar amb handles arrossegables.
 Funciona amb mouse (escriptori) i touch (Android/Chrome).
 Ordre d'aplicació: primer gir, després retall. Output: JPEG qualitat 0.92.
+*Millora mòbil*: S'ha convertit l'editor en un modal amb `max-h-[90vh]` i `overflow-y-auto` per evitar que els botons es tallin en pantalles petites.
 
 ### 5d — Revisió UX mòbil ✅ Completada
 Objectiu: polir l'experiència en dispositius mòbils.

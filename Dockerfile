@@ -40,6 +40,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Assegurar que l'usuari nextjs pot escriure a /app per als fitxers de SQLite
+RUN chown nextjs:nodejs /app
+
 USER nextjs
 
 EXPOSE 3000
