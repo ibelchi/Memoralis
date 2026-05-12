@@ -162,7 +162,7 @@ MEDIA_PATH="./media"
 - Usar rutes absolutes amb `path.join(process.cwd(), ...)` per al path del .db.
 - Usar `require` per carregar els binaris natius de better-sqlite3.
 - Per al build en Docker, s'ha configurat `next.config.mjs` per ignorar errors de linting i TypeScript, i s'han afegit variables d'entorn dummy al `Dockerfile` per permetre la compilació sense base de dades activa.
-- **PWA Icons:** Si les icones (ex: `icon-192.png`) són realment JPEGs, cal declarar `type: "image/jpeg"` al manifest encara que l'extensió sigui `.png`, altrament els navegadors mòbils fallaran i mostraran una icona genèrica.
+- **PWA Icons i Favicon:** S'ha assegurat que les icones del manifest i de les metadades tinguin el tipus correcte (`image/png`) ja que els fitxers són PNG. S'ha eliminat `app/favicon.ico` perquè el navegador faci servir la icona del manifest com a favicon, garantint consistència amb la icona d'accés directe d'Android.
 - **Prisma connectOrCreate i Tags:** No s'han d'enviar tags duplicats (ex: "Dibuix" i "dibuix") en una sola operació de creació, ja que Prisma fallarà amb un error de clau única. Cal de-duplicar i normalitzar en minúscules abans de fer la crida.
 - **Sincronització d'Autores:** Per mantenir la taula `Author` al dia, el handler de `POST /api/artworks` ha de fer un `upsert` de l'autora. Això permet que les autores apareguin a la configuració automàticament sense trencar el flux de pujada.
 - **Auto-upload UX:** Per a una experiència mòbil fluida, s'ha implementat pujada automàtica en seleccionar el fitxer (via `onChange`) tant a la pàgina d'upload com a la d'edició, eliminant botons innecessaris i mostrant estats clars ("Pujant...", "✓").
