@@ -111,6 +111,19 @@ export default function MediaUploadStep({ artworkId, artworkTitle, onComplete }:
     const file = e.target.files?.[0];
     if (!file || !artworkId) return;
 
+    const validAudioTypes = [
+      'audio/mpeg', 'audio/mp3',
+      'audio/mp4', 'audio/x-m4a', 'video/mp4',
+      'audio/wav', 'audio/wave', 'audio/x-wav',
+      'audio/ogg', 'audio/opus', 'audio/webm',
+      'audio/aac', 'audio/3gpp', 'audio/amr'
+    ];
+
+    if (!validAudioTypes.includes(file.type)) {
+      setError('Invalid file type. Only MP3, MP4, WAV, M4A, OGG and WEBM are allowed.');
+      return;
+    }
+
     setAudioFile(file);
     setIsUploadingAudio(true);
     setError(null);

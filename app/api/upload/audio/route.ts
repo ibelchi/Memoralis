@@ -14,8 +14,14 @@ export async function POST(request: Request) {
 
     const description = formData.get('description') as string;
 
-    // Validation: audio/mpeg, audio/mp4, audio/wav, audio/m4a, audio/ogg, audio/webm
-    const validTypes = ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/x-m4a', 'audio/m4a', 'audio/ogg', 'audio/webm'];
+    // Validation: audio/mpeg, audio/mp3, audio/mp4, audio/x-m4a, video/mp4, audio/wav, audio/wave, audio/x-wav, audio/ogg, audio/opus, audio/webm, audio/aac, audio/3gpp, audio/amr
+    const validTypes = [
+      'audio/mpeg', 'audio/mp3',
+      'audio/mp4', 'audio/x-m4a', 'video/mp4',
+      'audio/wav', 'audio/wave', 'audio/x-wav',
+      'audio/ogg', 'audio/opus', 'audio/webm',
+      'audio/aac', 'audio/3gpp', 'audio/amr'
+    ];
     if (!validTypes.includes(file.type)) {
       return NextResponse.json({ error: 'Invalid file type. Only MP3, MP4, WAV, M4A, OGG and WEBM are allowed.' }, { status: 400 });
     }
