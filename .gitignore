@@ -40,3 +40,7 @@ prisma/migrations/dev_*
 # media storage
 /media/*
 !/media/.gitkeep
+
+# avatars
+/public/avatars/*
+!/public/avatars/.gitkeep
